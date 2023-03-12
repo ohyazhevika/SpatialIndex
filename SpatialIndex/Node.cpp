@@ -125,20 +125,6 @@ Node* Node::insert(Node* p, int k) // вставка ключа k в дерево с корнем p
 	return balance(p);
 }
 
-void Node::inorderTraverse(Node* p, std::vector<int>& inorderSequence)
-{
-	if (p == NULL)
-		return;
-	if (p->lLink != NULL)
-	{
-		Node::inorderTraverse(p->lLink, inorderSequence);
-	}
-	inorderSequence.push_back(p->k);
-	if (p->rLink != NULL)
-	{
-		Node::inorderTraverse(p->rLink, inorderSequence);
-	}
-}
 
 Node* Node::inorderSuccessor(Node* p)
 {

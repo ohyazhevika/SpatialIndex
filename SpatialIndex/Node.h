@@ -32,25 +32,32 @@ struct Node
 	static Node* leftDummy;
 	static Node* rightDummy;
 
+	// вычисление высоты дерева с корнем в узле node
 	static int getHeight(const Node* node);
 
+	// разница высот левого и правого поддеревьев дерева с корнем в узле node
 	static int balanceFactor(const Node* node);
 
+	// пересчет высоты поддерева с корнем в узле node
 	static void fixHeight(Node* node);
 
-	static Node* rotateright(Node* p); // правый поворот вокруг p
+	// правый поворот вокруг p
+	static Node* rotateright(Node* p);
 
-	static Node* rotateleft(Node* q); // левый поворот вокруг q
+	// левый поворот вокруг q
+	static Node* rotateleft(Node* q);
 
-	static Node* balance(Node* p); // балансировка узла p
+	// балансировка узла p
+	static Node* balance(Node* p); 
 
-	static Node* insert(Node* p, int k); // вставка ключа k в дерево с корнем p
+	// вставка ключа k в дерево с корнем p
+	static Node* insert(Node* p, int k);
 
-	static void inorderTraverse(Node* p, std::vector<int>& inorderSequence);
+	// непосредственный inorder-последователь узла p 
+	static Node* inorderSuccessor(Node* p);
 
-	static Node* inorderSuccessor(Node* p); // непосредственный inorder-последователь узла p 
-
-	static Node* inorderPredecessor(Node* p);	// непосредственный inorder-предшественник узла p 
+	// непосредственный inorder-предшественник узла p
+	static Node* inorderPredecessor(Node* p); 
 
 
 	/*static int calculateHeight(const Node* p)
