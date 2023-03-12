@@ -1,0 +1,71 @@
+#pragma once
+#include "Segment.h"
+#include <iostream>
+#include <set>
+#include <string>
+#include <vector>
+
+//typedef double Numeric;
+//typedef std::string ListElement;
+//typedef std::set<ListElement> set;
+
+
+// узел BITS-дерева
+// 
+//template<typename Numeric, typename ListElement>
+struct Node
+{
+	int k;								// вместо этого у нас есть поле range
+	int height;							// высота поддерева с корнем в данном узле
+	//Segment range;						// атомарный сегмент
+	//std::set<Segment> associatedSet;	// ассоциированный список (список сегментов, включающих в себя данный атомарный сегмент)
+	Node* rLink;						// указатель на правого сына
+	Node* lLink;						// указатель на левого сына
+	bool isRThread;						// 1, если rLink является прямым указателем на successor-а данного узла
+	bool isLThread;						// 1, если lLink является прямым указателем на predecessor-а данного узла
+
+	Node();
+
+	// этот конструктор нам не нужен в таком виде, его нужно поменять  - у нас вместо k есть range
+	Node(int k);
+
+	static Node* leftDummy;
+	static Node* rightDummy;
+
+	static int getHeight(const Node* node);
+
+	static int balanceFactor(const Node* node);
+
+	static void fixHeight(Node* node);
+
+	static Node* rotateright(Node* p); // правый поворот вокруг p
+
+	static Node* rotateleft(Node* q); // левый поворот вокруг q
+
+	static Node* balance(Node* p); // балансировка узла p
+
+	static Node* insert(Node* p, int k); // вставка ключа k в дерево с корнем p
+
+	static void inorderTraverse(Node* p, std::vector<int>& inorderSequence);
+
+	static Node* inorderSuccessor(Node* p); // непосредственный inorder-последователь узла p 
+
+	static Node* inorderPredecessor(Node* p);	// непосредственный inorder-предшественник узла p 
+
+
+	/*static int calculateHeight(const Node* p)
+	{
+		if (p->lLink && p->isLThread == 0 && p->rLink && p->isRThread == 0) {
+			if (p->lLink->height < p->rLink->height)
+				return p->rLink->height + 1;
+			else return  p->lLink->height + 1;
+		}
+		else if (p->lLink && p->isLThread == 0 && p->isRThread == 1) {
+			return p->lLink->height + 1;
+		}
+		else if (p->isLThread == 1 && p->rLink && p->isRThread == 0) {
+			return p->rLink->height + 1;
+		}
+		return (p == NULL) ? 0 : 1;
+	}*/
+};
