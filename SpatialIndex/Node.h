@@ -24,8 +24,6 @@ struct Node
 	bool isRThread;						// 1, если rLink является прямым указателем на successor-а данного узла
 	bool isLThread;						// 1, если lLink является прямым указателем на predecessor-а данного узла
 
-	Node();
-
 	// этот конструктор нам не нужен в таком виде, его нужно поменять  - у нас вместо k есть range
 	Node(int k);
 
