@@ -55,8 +55,16 @@ struct Node
 	static Node* inorderSuccessor(Node* p);
 
 	// непосредственный inorder-предшественник узла p
-	static Node* inorderPredecessor(Node* p); 
+	static Node* inorderPredecessor(Node* p);
 
+	// самый левый узел (узел с минимальным значением ключа) в данном поддереве
+	static Node* findMin(Node* p);
+
+	// удаление узла с минимальным значением ключа в данном поддереве
+	static Node* removeMin(Node* p);
+
+	// удаление ключа k из дерева с корнем в узле p
+	static Node* remove(Node* p, int k);
 
 	/*static int calculateHeight(const Node* p)
 	{

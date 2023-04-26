@@ -153,3 +153,73 @@ Node* Node::inorderPredecessor(Node* p)
 	}
 	return q;
 }
+
+Node* Node:: findMin(Node* p)
+{
+	return (p->isLThread || p->lLink == leftDummy) ? p : findMin(p->lLink);
+}
+
+Node* Node::removeMin(Node* p)
+{
+	//if (p->isLThread || p->lLink == leftDummy)
+		//return p->rLink;
+	if (p->lLink == leftDummy)
+	{
+		if (p->isRThread)
+			return p->lLink;
+		else return p->rLink;
+	}
+	else if (p->isLThread)
+	{
+		if (p->isRThread)
+		{
+			p->rLink->isLThread = true;
+			return p;
+		}
+		else return p->rLink;
+	}
+	p->lLink = removeMin(p->lLink);
+	return balance(p);
+}
+
+Node* Node::remove(Node* p, int k)
+{
+	if (p == leftDummy || p == rightDummy)
+		return p;
+	if (k < p->k)
+	{
+		if (p->isLThread)
+			return p;
+		else
+			p->lLink = remove(p->lLink, k);
+	}
+	else if (k > p->k)
+	{
+		if (p->isRThread)
+			return p;
+		else
+			p->rLink = remove(p->rLink, k);
+	}
+	else
+	{
+		bool pLThread = p->isLThread;
+		Node* l = p->lLink;
+		bool pRThread = p->isRThread;
+		Node* r = (p->isRThread) ? NULL : p->rLink;
+		Node* predForDeletedNode = inorderPredecessor(p);
+		delete p;
+		if (pRThread)
+		{
+			return l;
+		}
+		Node* min = findMin(r);
+		min->rLink = removeMin(r);
+		min->isRThread = false;
+		min->lLink = l;
+		min->isLThread = false;
+		if(predForDeletedNode != leftDummy)
+			predForDeletedNode->rLink = min;
+		return balance(min);
+	}
+	balance(p);
+}

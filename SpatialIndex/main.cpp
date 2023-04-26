@@ -18,10 +18,6 @@ int main()
 	for (int i = 0; i < inorderSequence.size(); i++)
 		std::cout << inorderSequence[i] << " ";*/
 	Node* p = root;
-	while (p != NULL)
-	{
-		std::cout << p->k << " ";
-		p = Node::inorderSuccessor(p);
-	}
+	root = Node::remove(root, 8);
 
 }
