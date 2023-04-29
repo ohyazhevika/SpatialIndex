@@ -28,11 +28,11 @@ void Node::fixHeight(Node* node)
 Node* Node::rotateright(Node* p) // правый поворот вокруг p
 {
 	Node* q = p->lLink;
-	if (q->isRThread == false)
+	if (q->isRThread == false) {
 		p->lLink = q->rLink;
+	}
 	else {
 		p->isLThread = true;
-		p->lLink = q;
 	}
 	q->rLink = p;
 	q->isRThread = false;
@@ -44,11 +44,11 @@ Node* Node::rotateright(Node* p) // правый поворот вокруг p
 Node* Node::rotateleft(Node* q) // левый поворот вокруг q
 {
 	Node* p = q->rLink;
-	if (p->isLThread == false)
+	if (p->isLThread == false) {
 		q->rLink = p->lLink;
+	}
 	else {
 		q->isRThread = true;
-		q->rLink = p;
 	}
 	p->lLink = q;
 	p->isLThread = false;
@@ -161,8 +161,6 @@ Node* Node:: findMin(Node* p)
 
 Node* Node::removeMin(Node* p)
 {
-	//if (p->isLThread || p->lLink == leftDummy)
-		//return p->rLink;
 	if (p->lLink == leftDummy)
 	{
 		if (p->isRThread)
@@ -182,7 +180,7 @@ Node* Node::removeMin(Node* p)
 	return balance(p);
 }
 
-Node* Node::remove(Node* p, int k)
+Node* Node::remove(Node* p, int k, bool leftSon)
 {
 	if (p == leftDummy || p == rightDummy)
 		return p;
@@ -191,32 +189,64 @@ Node* Node::remove(Node* p, int k)
 		if (p->isLThread)
 			return p;
 		else
-			p->lLink = remove(p->lLink, k);
+			p->lLink = remove(p->lLink, k, true);
 	}
 	else if (k > p->k)
 	{
 		if (p->isRThread)
 			return p;
 		else
-			p->rLink = remove(p->rLink, k);
+			p->rLink = remove(p->rLink, k, false);
 	}
 	else
 	{
+		if (p ->lLink == leftDummy && p->rLink == rightDummy) {
+			delete p;
+			p = NULL;
+			return p;
+		}
 		bool pLThread = p->isLThread;
 		Node* l = p->lLink;
 		bool pRThread = p->isRThread;
-		Node* r = (p->isRThread) ? NULL : p->rLink;
+		Node* r = p->rLink;
 		Node* predForDeletedNode = inorderPredecessor(p);
 		delete p;
 		if (pRThread)
 		{
-			return l;
+			if (!pLThread) {
+				if (l != leftDummy) {
+					l->rLink = r;
+				}
+				return l;
+			}
+			else {
+				if (leftSon) {
+					r->isLThread = true;
+					return l;
+				}
+				else {
+					l->isRThread = true;
+					return r;
+				}
+			}
+		}
+		if (r == rightDummy)
+		{
+			if (pLThread)
+				return r;
+			else {
+				l->isRThread = false;
+				l->rLink = r;
+				return l;
+			}
 		}
 		Node* min = findMin(r);
-		min->rLink = removeMin(r);
-		min->isRThread = false;
+		if (min != r) {
+			min->rLink = removeMin(r);
+			min->isRThread = pRThread;
+		}
 		min->lLink = l;
-		min->isLThread = false;
+		min->isLThread = pLThread;
 		if(predForDeletedNode != leftDummy)
 			predForDeletedNode->rLink = min;
 		return balance(min);

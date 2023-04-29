@@ -64,21 +64,6 @@ struct Node
 	static Node* removeMin(Node* p);
 
 	// удаление ключа k из дерева с корнем в узле p
-	static Node* remove(Node* p, int k);
+	static Node* remove(Node* p, int k, bool leftSon = false);
 
-	/*static int calculateHeight(const Node* p)
-	{
-		if (p->lLink && p->isLThread == 0 && p->rLink && p->isRThread == 0) {
-			if (p->lLink->height < p->rLink->height)
-				return p->rLink->height + 1;
-			else return  p->lLink->height + 1;
-		}
-		else if (p->lLink && p->isLThread == 0 && p->isRThread == 1) {
-			return p->lLink->height + 1;
-		}
-		else if (p->isLThread == 1 && p->rLink && p->isRThread == 0) {
-			return p->rLink->height + 1;
-		}
-		return (p == NULL) ? 0 : 1;
-	}*/
 };

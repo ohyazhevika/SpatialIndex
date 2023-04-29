@@ -29,5 +29,8 @@
     <ClInclude Include="Segment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TreePrinter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
