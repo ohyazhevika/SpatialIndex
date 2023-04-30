@@ -50,9 +50,8 @@ struct Segment {
 	// пересечение двух отрезков
 	Segment overlap(const Segment& s)
 	{
-		//if ((a <= b < s.a <= s.b) || (s.a <= s.b < a <= b))
-		//	return nullptr;
-		assert(overlaps(s));
+		if (!overlaps(s))
+			return emptySegment();
 		if (a <= s.a <= b <= s.b)
 			return Segment(s.a, b);
 		if (a <= s.a <= s.b <= b)
@@ -68,13 +67,16 @@ struct Segment {
 	Segment unionForOverlapping(const Segment& s)
 	{
 		//отрезки должны пересекаться хотя бы в одной точке
-		assert(overlaps(s));
+		if (!overlaps(s))
+			return emptySegment();
 		return Segment(std::min(a, s.a), std::max(b, s.b));
 	}
 
 	// сегмент слева от пересечения 
 	Segment leftFromOverlap(const Segment& s)
 	{
+		if (!overlaps(s))
+			return emptySegment();
 		int union_a = unionForOverlapping(s).a;
 		int overlap_a = overlap(s).a;
 		return (union_a == overlap_a) ? emptySegment() : Segment(union_a, overlap_a);
@@ -83,6 +85,8 @@ struct Segment {
 	// сегмент справа от пересечения
 	Segment rightFromOverlap(const Segment& s)
 	{
+		if (!overlaps(s))
+			return emptySegment();
 		int union_b = unionForOverlapping(s).b;
 		int overlap_b = overlap(s).a;
 		return (union_b == overlap_b) ? emptySegment() : Segment(union_b, overlap_b);

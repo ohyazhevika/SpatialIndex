@@ -1,12 +1,11 @@
 ﻿#include "Node.h"
 
 class TreePrinter {
-    public: int cnt;
+
 private:
+
     bool printToConsole(const std::string& prefix, const Node* node, bool isLeft)
     {
-        if (TreePrinter::cnt > 30) return false;
-        cnt++;
         if (node != nullptr)
         {
             std::cout << prefix;
@@ -26,9 +25,9 @@ private:
     }
 
 public:
+
     bool printToConsole(const Node* node)
     {
-        cnt = 0;
         return printToConsole("", node, false);
     };
 };

@@ -32,5 +32,8 @@
     <ClInclude Include="TreePrinter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SegmentAssociatedList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
