@@ -1,9 +1,5 @@
 #pragma once
 #include "Segment.h"
-#include <iostream>
-#include <set>
-#include <string>
-#include <vector>
 
 //typedef double Numeric;
 //typedef std::string ListElement;

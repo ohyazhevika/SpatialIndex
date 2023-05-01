@@ -95,26 +95,14 @@ struct Segment {
 	// проверка того, что данный отрезок лежит строго левее отрезка s
 	bool operator < (const Segment& s)
 	{
-		return b < s.a;
-	}
-
-	// проверка того, что данный отрезок лежит левее отрезка s
-	bool operator <= (const Segment& s)
-	{
 		return b <= s.a;
 	}
 
 	// проверка того, что данный отрезок лежит строго правее отрезка s
 	bool operator > (const Segment& s)
 	{
-		return a > s.b;
-
-	}
-
-	// проверка того, что данный отрезок лежит правее отрезка s
-	bool operator >= (const Segment& s)
-	{
 		return a >= s.b;
+
 	}
 
 	Segment& operator = (const Segment& s) {

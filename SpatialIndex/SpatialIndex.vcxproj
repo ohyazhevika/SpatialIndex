@@ -129,11 +129,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="SegmentNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Node.h" />
     <ClInclude Include="Segment.h" />
     <ClInclude Include="SegmentAssociatedList.h" />
+    <ClInclude Include="SegmentNode.h" />
+    <ClInclude Include="SegmentTree.h" />
     <ClInclude Include="TreePrinter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
