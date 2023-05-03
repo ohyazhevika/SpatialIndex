@@ -19,9 +19,6 @@ struct Segment {
 	}
 	Segment(double a, double b)
 	{
-
-		if (a > b)
-			std::swap(a, b);
 		this->a = a;
 		this->b = b;
 	}
@@ -93,15 +90,15 @@ struct Segment {
 	}
 
 	// проверка того, что данный отрезок лежит строго левее отрезка s
-	bool operator < (const Segment& s)
+	friend bool operator < (const Segment& s1, const Segment& s2)
 	{
-		return b <= s.a;
+		return s1.b <= s2.a;
 	}
 
 	// проверка того, что данный отрезок лежит строго правее отрезка s
-	bool operator > (const Segment& s)
+	friend bool operator > (const Segment& s1, const Segment& s2)
 	{
-		return a >= s.b;
+		return s1.a >= s2.b;
 
 	}
 

@@ -132,10 +132,13 @@ SegmentNode* SegmentNode::insert(SegmentNode* p, Segment range) // вставка отрез
 }
 
 
-SegmentNode* SegmentNode:: insert(SegmentNode* root, Segment range, std::set<Segment> segmentsIds) // вставка отрезка в дерево с корнем p
+void SegmentNode:: INSERT(SegmentNode*& root, Segment range, std::set<Segment> segmentsIds) // вставка отрезка в дерево с корнем p
 {
 	// вставка в пустое поддерево
-	if (root == NULL) return new SegmentNode(range);
+	if (root == NULL) { 
+		root = new SegmentNode(range); 
+		root->associatedSet = segmentsIds;
+	}
 
 	SegmentNode* p = NULL;
 	SegmentNode* rootPtr = root;
@@ -157,56 +160,66 @@ SegmentNode* SegmentNode:: insert(SegmentNode* root, Segment range, std::set<Seg
 			}
 		}
 	}
-
 	// есть пересечение с диапазоном некоторого узла
 	if (!C.isEmpty()) {
 		rootPtr->range = C;
 		std::set<Segment> R = rootPtr->associatedSet;
 		rootPtr->associatedSet.insert(range);
-
-		// у нас образовался отрезок слева от пересечения range и диапазона корня - L, 
+		// образовался отрезок слева от пересечения range и диапазона корня - L 
 		if (range.a != rootRange.a) {
 			if (range.a < rootRange.a) {
 				R.insert(range);
 			}
-			SegmentNode* predecessor;
-			if (rootPtr->isLThread || rootPtr->lLink == leftDummy) {
-				predecessor = rootPtr->lLink;
-				SegmentNode* newNode = new SegmentNode(range);
+			Segment leftToOverlap = Segment(std::min(range.a, rootRange.a), std::max(range.a, rootRange.a));
+			SegmentNode* newNode;
+			SegmentNode* predecessor = rootPtr->lLink;
+			if (rootPtr->isLThread/* || rootPtr->lLink == leftDummy*/) {
+				newNode = new SegmentNode(leftToOverlap);
+				newNode->associatedSet.insert(range);
 				newNode->lLink = predecessor;
-				if (rootPtr->isLThread) {
-					newNode->isLThread = true;
-					rootPtr->isLThread = false;
-				}
+				newNode->isLThread = true;
+				rootPtr->isLThread = false;
 			}
 			else {
-				predecessor = inorderPredecessor(rootPtr);
-				Segment newRangeToInsert = Segment(std::min(range.a, rootRange.a), std::max(range.a, rootRange.a));
-				predecessor = Insert(predecessor, newRangeToInsert, R);
+				INSERT(predecessor, leftToOverlap, R);
+				newNode = predecessor;
+			}
+			rootPtr->lLink = newNode;
+			if (newNode->rLink == rightDummy)
+			{
+				newNode->rLink = rootPtr;
+				newNode->isRThread = true;
 			}
 		}
 
-		// у нас образовался отрезок справа от пересечения range и диапазона корня - R
+		// образовался отрезок справа от пересечения range и диапазона корня - R
 		if (range.b != rootRange.b) {
 			if (range.b > rootRange.b) {
 				R.insert(range);
 			}
-			SegmentNode* successor;
-			if (rootPtr->isRThread || rootPtr->rLink == rightDummy) {
-				successor = rootPtr->rLink;
-				SegmentNode* newNode = new SegmentNode(range);
+			Segment rightToOverlap = Segment(std::min(range.b, rootRange.b), std::max(range.b, rootRange.b));
+			SegmentNode* newNode;
+			SegmentNode* successor = rootPtr->rLink;
+			if (rootPtr->isRThread/* || rootPtr->rLink == rightDummy*/) {
+				newNode = new SegmentNode(rightToOverlap);
+				newNode->associatedSet.insert(range);
 				newNode->rLink = successor;
-				if (rootPtr->isRThread) {
-					newNode->isRThread = true;
-					rootPtr->isRThread = false;
-				}
+				newNode->isRThread = true;
+				rootPtr->isRThread = false;
+
 			}
 			else {
-				successor = inorderSuccessor(rootPtr);
-				Segment newRangeToInsert = Segment(std::min(range.b, rootRange.b), std::max(range.b, rootRange.b));
-				successor = Insert(successor, newRangeToInsert, R);
+				INSERT(successor, rightToOverlap, R);
+				newNode = successor;
+			}
+			rootPtr->rLink = newNode;
+			if (newNode->lLink == leftDummy)
+			{
+				newNode->lLink = rootPtr;
+				newNode->isLThread = true;
 			}
 		}
+
 	}
 
 	if (rootPtr == leftDummy || rootPtr == rightDummy) {
@@ -215,59 +228,17 @@ SegmentNode* SegmentNode:: insert(SegmentNode* root, Segment range, std::set<Seg
 		if (p != NULL) {
 			if (p->range < newNode->range) {
 				p->rLink = newNode;
+				newNode->isLThread = true;
+				newNode->lLink = p;
 			}
 			else {
 				p->lLink = newNode;
+				newNode->isRThread = true;
+				newNode->rLink = p;
 			}
 		}
 	}
-
-
-	//// исходная вставка в АВЛ
-	if (range < root->range)
-	{
-		SegmentNode* q;
-		if (root->isLThread)
-		{
-			SegmentNode* pred = root->lLink;
-			q = new SegmentNode(range);
-			q->isLThread = true;
-			q->lLink = pred;
-			root->isLThread = false;
-		}
-		else //if (!p->isLThread)
-		{
-			q = insert(root->lLink, range);
-		}
-		root->lLink = q;
-		if (q->rLink == rightDummy)
-		{
-			q->rLink = root;
-			q->isRThread = true;
-		}
-	}
-	else if (range > root->range)
-	{
-		SegmentNode* q;
-		if (root->isRThread) {
-			SegmentNode* succ = root->rLink;
-			q = new SegmentNode(range);
-			q->isRThread = true;
-			q->rLink = succ;
-			root->isRThread = false;
-		}
-		else
-		{
-			q = insert(root->rLink, range);
-		}
-		root->rLink = q;
-		if (q->lLink == leftDummy)
-		{
-			q->lLink = root;
-			q->isLThread = true;
-		}
-	}
-	return balance(root);
+	root = balance(root);
 }
 
 SegmentNode* SegmentNode::Insert(SegmentNode* root, Segment range) {

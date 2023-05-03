@@ -27,6 +27,8 @@ public:
 
 	// вставка отрезка range в дерево с корнем root
 	static SegmentNode* Insert(SegmentNode* root, Segment range);
+
+	static void INSERT(SegmentNode*& root, Segment range, std::set<Segment> segmentsIds);
 	
 	// удаление ключа k из дерева с корнем в узле p
 	static SegmentNode* remove(SegmentNode* p, Segment range, bool leftSon = false);
