@@ -41,23 +41,22 @@ struct Segment {
 	// проверка отрезков на взаимопересечение
 	bool overlaps(const Segment& s)
 	{
-		return !((a <= b < s.a <= s.b) || (s.a <= s.b < a <= b));
+		return !this->overlap(s).isEmpty();
 	}
 
 	// пересечение двух отрезков
 	Segment overlap(const Segment& s)
 	{
-		if (!overlaps(s))
-			return emptySegment();
-		if (a <= s.a <= b <= s.b)
+		if (a <= s.a && s.a < b && b <= s.b)
 			return Segment(s.a, b);
-		if (a <= s.a <= s.b <= b)
+		if (a <= s.a && s.a <= s.b && s.b <= b)
 			return Segment(s.a, s.b);
-		if (s.a <= a <= s.b <= b)
+		if (s.a <= a && a < s.b && s.b <= b)
 			return Segment(a, s.b);
-		if (s.a <= a <= b <= s.b)
+		if (s.a <= a && a <= b && b <= s.b)
 			return Segment(a, b);
-
+		else
+			return emptySegment();
 	}
 
 	//объединение
@@ -89,17 +88,48 @@ struct Segment {
 		return (union_b == overlap_b) ? emptySegment() : Segment(union_b, overlap_b);
 	}
 
-	// проверка того, что данный отрезок лежит строго левее отрезка s
-	friend bool operator < (const Segment& s1, const Segment& s2)
-	{
-		return s1.b <= s2.a;
+
+	bool isToTheLeftFrom(const Segment& s) {
+		return a <= b && b <= s.a && s.a <= s.b;
 	}
 
-	// проверка того, что данный отрезок лежит строго правее отрезка s
+	friend bool operator < (const Segment& s1, const Segment& s2)
+	{
+		if (s1.a < s2.a) {
+			return true;
+		}
+		else {
+			if (s2.a < s1.a)
+				return false;
+			else {
+				if (s1.b < s2.b)
+					return true;
+				else return false;
+			}
+		}
+	}
+
+	friend bool operator <= (const Segment& s1, const Segment& s2)
+	{
+		return !(s2 < s1);
+	}
+
 	friend bool operator > (const Segment& s1, const Segment& s2)
 	{
-		return s1.a >= s2.b;
+		return s2 < s1;;
+	}
 
+	friend bool operator >= (const Segment& s1, const Segment& s2)
+	{
+		return !(s1 < s2);
+	}
+
+	friend bool operator==(const Segment& s1, const Segment& s2) {
+		return s1.a == s2.a && s1.b == s2.b;
+	}
+
+	friend bool operator!=(const Segment& s1, const Segment& s2) {
+		return s1.a != s2.a || s1.b != s2.b;
 	}
 
 	Segment& operator = (const Segment& s) {

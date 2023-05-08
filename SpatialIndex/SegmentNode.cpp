@@ -1,8 +1,10 @@
 #include "SegmentNode.h"
+#include <stack>
 
 
 SegmentNode* SegmentNode::leftDummy = NULL;
 SegmentNode* SegmentNode::rightDummy = NULL;
+
 
 SegmentNode::SegmentNode(Segment range) :	range(range),
 									rLink(rightDummy),
@@ -31,7 +33,7 @@ void SegmentNode::fixHeight(SegmentNode* node)
 	node->height = ((heightL > heightR) ? heightL : heightR) + 1;
 }
 
-SegmentNode* SegmentNode::rotateright(SegmentNode* p) // правый поворот вокруг p
+void SegmentNode::rotateright(SegmentNode*& p) // правый поворот вокруг p
 {
 	SegmentNode* q = p->lLink;
 	if (q->isRThread == false) {
@@ -44,10 +46,10 @@ SegmentNode* SegmentNode::rotateright(SegmentNode* p) // правый поворот вокруг p
 	q->isRThread = false;
 	fixHeight(p);
 	fixHeight(q);
-	return q;
+	p = q;
 }
 
-SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // левый поворот вокруг q
+void SegmentNode::rotateleft(SegmentNode*& q) // левый поворот вокруг q
 {
 	SegmentNode* p = q->rLink;
 	if (p->isLThread == false) {
@@ -60,120 +62,95 @@ SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // левый поворот вокруг q
 	p->isLThread = false;
 	fixHeight(q);
 	fixHeight(p);
-	return p;
+	q = p;
 }
 
-SegmentNode* SegmentNode::balance(SegmentNode* p) // балансировка узла p
+void SegmentNode::balance(SegmentNode*& p) // балансировка узла p
 {
+	if (p == NULL)
+		return;
 	fixHeight(p);
 	int bf = balanceFactor(p);
 	if (bf == -2)
 	{
 		if (balanceFactor(p->rLink) > 0)
-			p->rLink = rotateright(p->rLink);
-		return rotateleft(p);
+			rotateright(p->rLink);
+		rotateleft(p);
 	}
 	if (bf == 2)
 	{
 		if (balanceFactor(p->lLink) < 0)
-			p->lLink = rotateleft(p->lLink);
-		return rotateright(p);
+			rotateleft(p->lLink);
+		rotateright(p);
 	}
-	return p; // балансировка не нужна
 }
 
-SegmentNode* SegmentNode::insert(SegmentNode* p, Segment range) // вставка отрезка в дерево с корнем p
-{
-	if (p == NULL) return new SegmentNode(range);
-	if (range < p->range)
-	{
-		SegmentNode* q;
-		if (p->isLThread)
-		{
-			SegmentNode* pred = p->lLink;
-			q = new SegmentNode(range);
-			q->isLThread = true;
-			q->lLink = pred;
-			p->isLThread = false;
-		}
-		else //if (!p->isLThread)
-		{
-			q = insert(p->lLink, range);
-		}
-		p->lLink = q;
-		if (q->rLink == rightDummy)
-		{
-			q->rLink = p;
-			q->isRThread = true;
-		}
-	}
-	else if (range > p->range)
-	{
-		SegmentNode* q;
-		if (p->isRThread) {
-			SegmentNode* succ = p->rLink;
-			q = new SegmentNode(range);
-			q->isRThread = true;
-			q->rLink = succ;
-			p->isRThread = false;
-		}
-		else
-		{
-			q = insert(p->rLink, range);
-		}
-		p->rLink = q;
-		if (q->lLink == leftDummy)
-		{
-			q->lLink = p;
-			q->isLThread = true;
-		}
-	}
-	return balance(p);
+void SegmentNode::INSERT(SegmentNode*& root, Segment range) {
+	std::set<Segment> associatedSet = std::set<Segment>();
+	associatedSet.insert(range);
+	INSERT(root, range, associatedSet);
 }
 
-
-void SegmentNode:: INSERT(SegmentNode*& root, Segment range, std::set<Segment> segmentsIds) // вставка отрезка в дерево с корнем p
+void SegmentNode:: INSERT(SegmentNode*& root, Segment range, std::set<Segment>& segmentsIds) // вставка отрезка в дерево с корнем p
 {
 	// вставка в пустое поддерево
 	if (root == NULL) { 
 		root = new SegmentNode(range); 
 		root->associatedSet = segmentsIds;
+		return;
 	}
 
-	SegmentNode* p = NULL;
+	std::stack<SegmentNode*> nodesPath;
+	std::stack<bool> isReachedFromLeft;
+	nodesPath.push(root);
+	SegmentNode* p = root;
 	SegmentNode* rootPtr = root;
 	Segment C;
 	Segment rootRange;
-
+	bool reachedThread = false;
 	// пытаемся найти узел, с диапазоном которого у нас есть пересечение
-	while (C.isEmpty() && rootPtr != leftDummy && rootPtr != rightDummy) {
+	do {
 		rootRange = rootPtr->range;
 		C = rootRange.overlap(range);
 		p = rootPtr;
 		if (C.isEmpty()) {
-			if (range < rootRange)
+			if (range.isToTheLeftFrom(rootRange))
 			{
-				rootPtr = rootPtr->lLink;
+				if (rootPtr->isLThread) {
+					reachedThread = true;
+				}
+				else {
+					rootPtr = rootPtr->lLink;
+					isReachedFromLeft.push(true);
+					nodesPath.push(rootPtr);
+				}
 			}
 			else {
-				rootPtr = rootPtr->rLink;
+				if (rootPtr->isRThread) {
+					reachedThread = true;
+				}
+				else {
+					rootPtr = rootPtr->rLink;
+					isReachedFromLeft.push(false);
+					nodesPath.push(rootPtr);
+				}
 			}
 		}
-	}
+	} while (C.isEmpty() && rootPtr != leftDummy && rootPtr != rightDummy && !reachedThread);
 	// есть пересечение с диапазоном некоторого узла
 	if (!C.isEmpty()) {
 		rootPtr->range = C;
 		std::set<Segment> R = rootPtr->associatedSet;
-		rootPtr->associatedSet.insert(range);
+		rootPtr->associatedSet.insert(segmentsIds.begin(), segmentsIds.end());
 		// образовался отрезок слева от пересечения range и диапазона корня - L 
 		if (range.a != rootRange.a) {
 			if (range.a < rootRange.a) {
-				R.insert(range);
+				R = segmentsIds;
 			}
 			Segment leftToOverlap = Segment(std::min(range.a, rootRange.a), std::max(range.a, rootRange.a));
 			SegmentNode* newNode;
 			SegmentNode* predecessor = rootPtr->lLink;
-			if (rootPtr->isLThread/* || rootPtr->lLink == leftDummy*/) {
+			if (rootPtr->isLThread) {
 				newNode = new SegmentNode(leftToOverlap);
 				newNode->associatedSet.insert(range);
 				newNode->lLink = predecessor;
@@ -195,12 +172,12 @@ void SegmentNode:: INSERT(SegmentNode*& root, Segment range, std::set<Segment> s
 		// образовался отрезок справа от пересечения range и диапазона корня - R
 		if (range.b != rootRange.b) {
 			if (range.b > rootRange.b) {
-				R.insert(range);
+				R = segmentsIds;
 			}
 			Segment rightToOverlap = Segment(std::min(range.b, rootRange.b), std::max(range.b, rootRange.b));
 			SegmentNode* newNode;
 			SegmentNode* successor = rootPtr->rLink;
-			if (rootPtr->isRThread/* || rootPtr->rLink == rightDummy*/) {
+			if (rootPtr->isRThread) {
 				newNode = new SegmentNode(rightToOverlap);
 				newNode->associatedSet.insert(range);
 				newNode->rLink = successor;
@@ -222,87 +199,79 @@ void SegmentNode:: INSERT(SegmentNode*& root, Segment range, std::set<Segment> s
 
 	}
 
+	if (reachedThread) {
+		SegmentNode* newNode = new SegmentNode(range);
+		newNode->associatedSet = segmentsIds;
+		if (newNode->range.isToTheLeftFrom(rootPtr->range)) {
+			newNode->isLThread = true;
+			newNode->lLink = rootPtr->lLink;
+			rootPtr->isLThread = false;
+			rootPtr->lLink = newNode;
+			newNode->isRThread = true;
+			newNode->rLink = rootPtr;
+			isReachedFromLeft.push(true);
+		}
+		else {
+			newNode->isRThread = true;
+			newNode->rLink = rootPtr->rLink;
+			rootPtr->isRThread = false;
+			rootPtr->rLink = newNode;
+			newNode->isLThread = true;
+			newNode->lLink = rootPtr;
+			isReachedFromLeft.push(false);
+		}
+		nodesPath.push(newNode);
+	}
+
 	if (rootPtr == leftDummy || rootPtr == rightDummy) {
 		SegmentNode* newNode = new SegmentNode(range);
 		newNode->associatedSet = segmentsIds;
-		if (p != NULL) {
-			if (p->range < newNode->range) {
-				p->rLink = newNode;
-				newNode->isLThread = true;
-				newNode->lLink = p;
+		if (p->range.isToTheLeftFrom(newNode->range)) {
+			p->rLink = newNode;
+			newNode->isLThread = true;
+			newNode->lLink = p;
+		}
+		else {
+			p->lLink = newNode;
+			newNode->isRThread = true;
+			newNode->rLink = p;
+		}
+		rootPtr = p;
+		nodesPath.pop();
+		nodesPath.push(newNode);
+	}
+	
+	SegmentNode* kid;
+	SegmentNode* parent = NULL;
+	bool isReachedFromLeftVar;
+
+	if (!nodesPath.empty()) {
+		parent = nodesPath.top();
+		nodesPath.pop();
+	}
+
+	
+	/*while (!nodesPath.empty()) {
+
+		kid = parent;
+		balance(kid);
+
+		if (!nodesPath.empty()) {
+			parent = nodesPath.top();
+			nodesPath.pop();
+			
+			isReachedFromLeftVar = isReachedFromLeft.top();
+			isReachedFromLeft.pop();
+			if (isReachedFromLeftVar) {
+				parent->lLink = kid;
 			}
 			else {
-				p->lLink = newNode;
-				newNode->isRThread = true;
-				newNode->rLink = p;
+				parent->rLink = kid;
 			}
 		}
 	}
-	root = balance(root);
-}
 
-SegmentNode* SegmentNode::Insert(SegmentNode* root, Segment range) {
-	std::set<Segment> segmentsIds = std::set<Segment>();
-	segmentsIds.insert(range);
-	return SegmentNode::Insert(root, range, segmentsIds);
-}
-
-SegmentNode* SegmentNode::Insert(SegmentNode* root, Segment range, std::set<Segment> segmentsIds) {
-	SegmentNode* p = NULL;
-	SegmentNode* rootPtr = root;
-	Segment rangeToInsert = range;
-	if (rootPtr != NULL && rootPtr != leftDummy && rootPtr != rightDummy) {
-		Segment C;
-		Segment rootRange;
-		while (C.isEmpty() && rootPtr != leftDummy && rootPtr != rightDummy) {
-			rootRange = rootPtr->range;
-			C = rootRange.overlap(rangeToInsert);
-			p = rootPtr;
-			if (C.isEmpty()) {
-				if (rangeToInsert < rootRange)
-				{
-					rootPtr = rootPtr->lLink;
-				}
-				else {
-					rootPtr = rootPtr->rLink;
-				}
-			}
-		}
-		if (!C.isEmpty()) {
-			rootPtr->range = C;
-			std::set<Segment> R = rootPtr->associatedSet;
-			rootPtr->associatedSet.insert(rangeToInsert);
-			if (rangeToInsert.a != rootRange.a) {
-				if (rangeToInsert.a < rootRange.a) {
-					R.insert(rangeToInsert);
-				}
-				SegmentNode* predecessor = inorderPredecessor(rootPtr);
-				Segment newRangeToInsert = Segment(std::min(rangeToInsert.a, rootRange.a), std::max(rangeToInsert.a, rootRange.a));
-				predecessor = Insert(predecessor, newRangeToInsert, R);
-			}
-			if (rangeToInsert.b != rootRange.b) {
-				if (rangeToInsert.b > rootRange.b) {
-					R.insert(rangeToInsert);
-				}
-				SegmentNode* successor = inorderSuccessor(rootPtr);
-				Segment newRangeToInsert = Segment(std::min(rangeToInsert.b, rootRange.b), std::max(rangeToInsert.b, rootRange.b));
-				successor = Insert(successor, newRangeToInsert, R);
-			}
-		}
-	}
-	if (rootPtr == NULL || rootPtr == leftDummy || rootPtr == rightDummy) {
-		SegmentNode* newNode = new SegmentNode(rangeToInsert);
-		newNode->associatedSet = segmentsIds;
-		if (p != NULL) {
-			if (p->range < newNode->range) {
-				p->rLink = newNode;
-			}
-			else {
-				p->lLink = newNode;
-			}
-		}
-	}
-	return balance(rootPtr);
+	balance(parent);*/
 }
 
 
@@ -339,97 +308,97 @@ SegmentNode* SegmentNode::findMin(SegmentNode* p)
 	return (p->isLThread || p->lLink == leftDummy) ? p : findMin(p->lLink);
 }
 
-SegmentNode* SegmentNode::removeMin(SegmentNode* p)
-{
-	if (p->lLink == leftDummy)
-	{
-		if (p->isRThread)
-			return p->lLink;
-		else return p->rLink;
-	}
-	else if (p->isLThread)
-	{
-		if (p->isRThread)
-		{
-			p->rLink->isLThread = true;
-			return p;
-		}
-		else return p->rLink;
-	}
-	p->lLink = removeMin(p->lLink);
-	return balance(p);
-}
-
-SegmentNode* SegmentNode::remove(SegmentNode* p, Segment range, bool leftSon)
-{
-	if (p == leftDummy || p == rightDummy)
-		return p;
-	if (range < p->range)
-	{
-		if (p->isLThread)
-			return p;
-		else
-			p->lLink = remove(p->lLink, range, true);
-	}
-	else if (range > p->range)
-	{
-		if (p->isRThread)
-			return p;
-		else
-			p->rLink = remove(p->rLink, range, false);
-	}
-	else
-	{
-		if (p->lLink == leftDummy && p->rLink == rightDummy) {
-			delete p;
-			p = NULL;
-			return p;
-		}
-		bool pLThread = p->isLThread;
-		SegmentNode* l = p->lLink;
-		bool pRThread = p->isRThread;
-		SegmentNode* r = p->rLink;
-		SegmentNode* predForDeletedNode = inorderPredecessor(p);
-		delete p;
-		if (pRThread)
-		{
-			if (!pLThread) {
-				if (l != leftDummy) {
-					l->rLink = r;
-				}
-				return l;
-			}
-			else {
-				if (leftSon) {
-					r->isLThread = true;
-					return l;
-				}
-				else {
-					l->isRThread = true;
-					return r;
-				}
-			}
-		}
-		if (r == rightDummy)
-		{
-			if (pLThread)
-				return r;
-			else {
-				l->isRThread = false;
-				l->rLink = r;
-				return l;
-			}
-		}
-		SegmentNode* min = findMin(r);
-		if (min != r) {
-			min->rLink = removeMin(r);
-			min->isRThread = pRThread;
-		}
-		min->lLink = l;
-		min->isLThread = pLThread;
-		if (predForDeletedNode != leftDummy)
-			predForDeletedNode->rLink = min;
-		return balance(min);
-	}
-	balance(p);
-}
+//SegmentNode* SegmentNode::removeMin(SegmentNode* p)
+//{
+//	if (p->lLink == leftDummy)
+//	{
+//		if (p->isRThread)
+//			return p->lLink;
+//		else return p->rLink;
+//	}
+//	else if (p->isLThread)
+//	{
+//		if (p->isRThread)
+//		{
+//			p->rLink->isLThread = true;
+//			return p;
+//		}
+//		else return p->rLink;
+//	}
+//	p->lLink = removeMin(p->lLink);
+//	balance(p);
+//}
+//
+//SegmentNode* SegmentNode::remove(SegmentNode* p, Segment range, bool leftSon)
+//{
+//	if (p == leftDummy || p == rightDummy)
+//		return p;
+//	if (range < p->range)
+//	{
+//		if (p->isLThread)
+//			return p;
+//		else
+//			p->lLink = remove(p->lLink, range, true);
+//	}
+//	else if (range > p->range)
+//	{
+//		if (p->isRThread)
+//			return p;
+//		else
+//			p->rLink = remove(p->rLink, range, false);
+//	}
+//	else
+//	{
+//		if (p->lLink == leftDummy && p->rLink == rightDummy) {
+//			delete p;
+//			p = NULL;
+//			return p;
+//		}
+//		bool pLThread = p->isLThread;
+//		SegmentNode* l = p->lLink;
+//		bool pRThread = p->isRThread;
+//		SegmentNode* r = p->rLink;
+//		SegmentNode* predForDeletedNode = inorderPredecessor(p);
+//		delete p;
+//		if (pRThread)
+//		{
+//			if (!pLThread) {
+//				if (l != leftDummy) {
+//					l->rLink = r;
+//				}
+//				return l;
+//			}
+//			else {
+//				if (leftSon) {
+//					r->isLThread = true;
+//					return l;
+//				}
+//				else {
+//					l->isRThread = true;
+//					return r;
+//				}
+//			}
+//		}
+//		if (r == rightDummy)
+//		{
+//			if (pLThread)
+//				return r;
+//			else {
+//				l->isRThread = false;
+//				l->rLink = r;
+//				return l;
+//			}
+//		}
+//		SegmentNode* min = findMin(r);
+//		if (min != r) {
+//			min->rLink = removeMin(r);
+//			min->isRThread = pRThread;
+//		}
+//		min->lLink = l;
+//		min->isLThread = pLThread;
+//		if (predForDeletedNode != leftDummy)
+//			predForDeletedNode->rLink = min;
+//		return balance(min);
+//	}
+//	balance(p);
+//}

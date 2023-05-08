@@ -13,29 +13,23 @@
 
 int main()
 {
-	SegmentNode* root = new SegmentNode(Segment(20, 25));
+
 	TreePrinter printer = TreePrinter();
-	printer.printToConsole(root);
-	std::set<Segment> sett;
-	Segment segs[] = {Segment()};
-	SegmentNode::INSERT(root, Segment(10, 11), sett);
-	printer.printToConsole(root);
-
-	/*Node* root = new Node(0);
-	TreePrinter printer = TreePrinter();
-	printer.printToConsole(root);
-	int cnt = 100000;
-
-
-	while (cnt > 0) {
-		cnt--;
-		bool insert = true;
-		if (insert) {
-			root = Node::insert(root, cnt);
-		}
+	SegmentNode* root = NULL;
+	int cnt = 0;
+	while (cnt < 10) {
+		cnt++;
+		double
+			left = std::rand() % 100,
+			length = std::rand() % 100 + 1,
+			right = left + length;
+		SegmentNode::INSERT(root, Segment(left, right));
+		printer.printToConsole(root);
 	}
-	auto start = std::chrono::high_resolution_clock::now();
-	root = Node::insert(root, 1000000);
+
+
+	/*auto start = std::chrono::high_resolution_clock::now();
+
 	auto finish = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
 
