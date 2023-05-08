@@ -20,9 +20,9 @@ public:
 	static SegmentNode* leftDummy;
 	static SegmentNode* rightDummy;
 
-	static void INSERT(SegmentNode*& root, Segment range, std::set<Segment>& segmentsIds);
-
 	static void INSERT(SegmentNode*& root, Segment range);
+
+	static SegmentNode* ins(SegmentNode* root, Segment range, std::set<Segment>& segmentaIds);
 	
 	// удаление ключа k из дерева с корнем в узле p
 	static SegmentNode* remove(SegmentNode* p, Segment range, bool leftSon = false);
@@ -45,13 +45,13 @@ private:
 	static void fixHeight(SegmentNode* node);
 
 	// правый поворот вокруг p
-	static void rotateright(SegmentNode*& p);
+	static SegmentNode* rotateright(SegmentNode* p);
 
 	// левый поворот вокруг q
-	static void rotateleft(SegmentNode*& q);
+	static SegmentNode* rotateleft(SegmentNode* q);
 
 	// балансировка узла p
-	static void balance(SegmentNode*& p);
+	static SegmentNode* balance(SegmentNode* p);
 
 	// самый левый узел (узел с минимальным значением ключа) в данном поддереве
 	static SegmentNode* findMin(SegmentNode* p);

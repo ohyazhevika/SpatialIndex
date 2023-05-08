@@ -17,10 +17,12 @@ int main()
 	TreePrinter printer = TreePrinter();
 	SegmentNode* root = NULL;
 	int cnt = 0;
-	while (cnt < 10) {
+	while (cnt < 100) {
 		cnt++;
 		double
-			left = std::rand() % 100,
+			/*left = std::rand() % 100,
+			length = std::rand() % 100 + 1,*/
+			left = std::rand() % 1000,
 			length = std::rand() % 100 + 1,
 			right = left + length;
 		SegmentNode::INSERT(root, Segment(left, right));
