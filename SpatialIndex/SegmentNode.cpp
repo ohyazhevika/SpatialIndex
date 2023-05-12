@@ -1,7 +1,6 @@
 #include "SegmentNode.h"
 #include <stack>
 
-
 SegmentNode* SegmentNode::leftDummy = NULL;
 SegmentNode* SegmentNode::rightDummy = NULL;
 
@@ -84,13 +83,13 @@ SegmentNode* SegmentNode::balance(SegmentNode* p) // балансировка узла p
 	return p;
 }
 
-void SegmentNode::INSERT(SegmentNode*& root, Segment range) {
+void SegmentNode::Insert(SegmentNode*& root, Segment range) {
 	std::set<Segment> associatedSet = std::set<Segment>();
 	associatedSet.insert(range);
-	root = ins (root, range, associatedSet);
+	root = Insert (root, range, associatedSet);
 }
 
-SegmentNode* SegmentNode::ins(SegmentNode* root, Segment range, std::set<Segment>& segmentsIds) {
+SegmentNode* SegmentNode::Insert(SegmentNode* root, Segment range, std::set<Segment>& segmentsIds) {
 	if (root == NULL) {
 		SegmentNode* newNode = new SegmentNode(range);
 		newNode->associatedSet = segmentsIds;
@@ -139,7 +138,7 @@ SegmentNode* SegmentNode::ins(SegmentNode* root, Segment range, std::set<Segment
 			root->isLThread = false;
 		}
 		else {
-			q = ins(root->lLink, leftForInsertion, L);
+			q = Insert(root->lLink, leftForInsertion, L);
 		}
 		root->lLink = q;
 		if (q->rLink == rightDummy)
@@ -159,7 +158,7 @@ SegmentNode* SegmentNode::ins(SegmentNode* root, Segment range, std::set<Segment
 			root->isRThread = false;
 		}
 		else {
-			q = ins(root->rLink, rightForInsertion, R);
+			q = Insert(root->rLink, rightForInsertion, R);
 		}
 		root->rLink = q;
 		if (q->lLink == leftDummy)

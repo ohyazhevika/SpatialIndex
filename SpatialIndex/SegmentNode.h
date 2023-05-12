@@ -20,9 +20,9 @@ public:
 	static SegmentNode* leftDummy;
 	static SegmentNode* rightDummy;
 
-	static void INSERT(SegmentNode*& root, Segment range);
+	static void Insert(SegmentNode*& root, Segment range);
 
-	static SegmentNode* ins(SegmentNode* root, Segment range, std::set<Segment>& segmentaIds);
+	static SegmentNode* Insert(SegmentNode* root, Segment range, std::set<Segment>& segmentaIds);
 	
 	// удаление ключа k из дерева с корнем в узле p
 	static SegmentNode* remove(SegmentNode* p, Segment range, bool leftSon = false);

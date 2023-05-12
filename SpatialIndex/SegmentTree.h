@@ -27,14 +27,6 @@ SegmentTree::SegmentTree() {
 	root = NULL;
 }
 
-SegmentTree::SegmentTree(const SegmentTree& other) {
-	assert(NULL);
-}
-
-SegmentTree::~SegmentTree() {
-	assert(NULL);
-}
-
 void SegmentTree::Insert(const Segment& segment) {
-
+	SegmentNode::Insert(root, segment);
 }

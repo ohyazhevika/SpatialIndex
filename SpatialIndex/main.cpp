@@ -25,7 +25,7 @@ int main()
 			left = std::rand() % 1000,
 			length = std::rand() % 100 + 1,
 			right = left + length;
-		SegmentNode::INSERT(root, Segment(left, right));
+		SegmentNode::Insert(root, Segment(left, right));
 		printer.printToConsole(root);
 	}
 
