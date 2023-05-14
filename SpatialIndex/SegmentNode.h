@@ -4,6 +4,7 @@
 
 struct SegmentNode {
 public:
+
 	Segment range;						// атомарный сегмент
 	std::set<Segment> associatedSet;	// ассоциированный список (список сегментов, включающих в себя данный атомарный сегмент)
 
@@ -13,8 +14,6 @@ public:
 	bool isRThread;						// 1, если rLink является ссылкой на правый дочерний
 	bool isLThread;						// 1, если lLink является ссылкой на левый дочерний узел
 
-public:
-
 	SegmentNode(Segment range);
 
 	static SegmentNode* leftDummy;
@@ -23,6 +22,8 @@ public:
 	static void Insert(SegmentNode*& root, Segment range);
 
 	static SegmentNode* Insert(SegmentNode* root, Segment range, std::set<Segment>& segmentaIds);
+
+	static SegmentNode* rem(SegmentNode* p, const Segment& segment, bool isSearchOfStart);
 	
 	// удаление ключа k из дерева с корнем в узле p
 	static SegmentNode* remove(SegmentNode* p, Segment range, bool leftSon = false);
@@ -35,8 +36,11 @@ public:
 
 	// вычисление высоты дерева с корнем в узле node
 	static int getHeight(const SegmentNode* node);
+	
+	// секущий запрос для дерева
+	static SegmentNode* getOverlappingNodeForPoint(SegmentNode* root, const double point);
 
-private:
+public:
 
 	// разница высот левого и правого поддеревьев дерева с корнем в узле node
 	static int balanceFactor(const SegmentNode* node);

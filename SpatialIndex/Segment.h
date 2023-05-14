@@ -38,6 +38,10 @@ struct Segment {
 		return a == b;
 	}
 
+	bool contains(const double p) {
+		return a <= p && p <= b;
+	}
+
 	// проверка отрезков на взаимопересечение
 	bool overlaps(const Segment& s)
 	{

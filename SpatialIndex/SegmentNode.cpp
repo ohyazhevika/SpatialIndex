@@ -1,5 +1,4 @@
 #include "SegmentNode.h"
-#include <stack>
 
 SegmentNode* SegmentNode::leftDummy = NULL;
 SegmentNode* SegmentNode::rightDummy = NULL;
@@ -66,6 +65,7 @@ SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // левый поворот вокруг q
 
 SegmentNode* SegmentNode::balance(SegmentNode* p) // балансировка узла p
 {
+	if (!p) return NULL;
 	fixHeight(p);
 	int bf = balanceFactor(p);
 	if (bf == -2)
@@ -204,97 +204,208 @@ SegmentNode* SegmentNode::findMin(SegmentNode* p)
 	return (p->isLThread || p->lLink == leftDummy) ? p : findMin(p->lLink);
 }
 
-//SegmentNode* SegmentNode::removeMin(SegmentNode* p)
-//{
-//	if (p->lLink == leftDummy)
-//	{
-//		if (p->isRThread)
-//			return p->lLink;
-//		else return p->rLink;
-//	}
-//	else if (p->isLThread)
-//	{
-//		if (p->isRThread)
-//		{
-//			p->rLink->isLThread = true;
-//			return p;
-//		}
-//		else return p->rLink;
-//	}
-//	p->lLink = removeMin(p->lLink);
-//	balance(p);
-//}
-//
-//SegmentNode* SegmentNode::remove(SegmentNode* p, Segment range, bool leftSon)
-//{
-//	if (p == leftDummy || p == rightDummy)
-//		return p;
-//	if (range < p->range)
-//	{
-//		if (p->isLThread)
-//			return p;
-//		else
-//			p->lLink = remove(p->lLink, range, true);
-//	}
-//	else if (range > p->range)
-//	{
-//		if (p->isRThread)
-//			return p;
-//		else
-//			p->rLink = remove(p->rLink, range, false);
-//	}
-//	else
-//	{
-//		if (p->lLink == leftDummy && p->rLink == rightDummy) {
-//			delete p;
-//			p = NULL;
-//			return p;
-//		}
-//		bool pLThread = p->isLThread;
-//		SegmentNode* l = p->lLink;
-//		bool pRThread = p->isRThread;
-//		SegmentNode* r = p->rLink;
-//		SegmentNode* predForDeletedNode = inorderPredecessor(p);
-//		delete p;
-//		if (pRThread)
-//		{
-//			if (!pLThread) {
-//				if (l != leftDummy) {
-//					l->rLink = r;
-//				}
-//				return l;
-//			}
-//			else {
-//				if (leftSon) {
-//					r->isLThread = true;
-//					return l;
-//				}
-//				else {
-//					l->isRThread = true;
-//					return r;
-//				}
-//			}
-//		}
-//		if (r == rightDummy)
-//		{
-//			if (pLThread)
-//				return r;
-//			else {
-//				l->isRThread = false;
-//				l->rLink = r;
-//				return l;
-//			}
-//		}
-//		SegmentNode* min = findMin(r);
-//		if (min != r) {
-//			min->rLink = removeMin(r);
-//			min->isRThread = pRThread;
-//		}
-//		min->lLink = l;
-//		min->isLThread = pLThread;
-//		if (predForDeletedNode != leftDummy)
-//			predForDeletedNode->rLink = min;
-//		return balance(min);
-//	}
-//	balance(p);
-//}
+SegmentNode* SegmentNode::removeMin(SegmentNode* p)
+{
+	if (p->lLink == leftDummy)
+	{
+		if (p->isRThread)
+			return p->lLink;
+		else return p->rLink;
+	}
+	else if (p->isLThread)
+	{
+		if (p->isRThread)
+		{
+			p->rLink->isLThread = true;
+			return p;
+		}
+		else return p->rLink;
+	}
+	p->lLink = removeMin(p->lLink);
+	balance(p);
+}
+
+// из узла p удаляет сегмент segment, если узел теперь пуст или может слиться с предыдущим - сливаем;
+// возвращаем указатель на себя же; если смержили - то возвращается указатель на предшественника прямого
+SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool isSearchOfStart = true) {
+	if (p == NULL)
+		return p;
+	Segment pRange = p->range;
+	if (isSearchOfStart) {
+		if (!pRange.contains(segment.a)) {
+			if (pRange.a < segment.a) {
+				if (!p->isRThread) {
+					p->rLink = rem(p->rLink, segment, true);
+				}
+				else {
+					return p;
+				}
+			}
+			else {
+				if (!p->isLThread) {
+					p->lLink = rem(p->lLink, segment, true);
+				}
+				else {
+					return p;
+				}
+			}
+		}
+		else {
+			if (!(p->range.a == segment.a && p->range.b <= segment.b)) {
+				return p;
+			}
+			else {
+				return rem(p, segment, false);
+			}
+		}
+	}
+	else {
+		p->associatedSet.erase(segment);
+		Segment processedRange = p->range;
+		SegmentNode* pred = SegmentNode::inorderPredecessor(p);
+		bool sameAsPred = pred != leftDummy && pred->range.b == processedRange.a && pred->associatedSet == p->associatedSet;
+
+		// здесь нужно мержить - то есть удалять один узел
+		if (p->associatedSet.empty() || sameAsPred) {
+			if (!p->isLThread) {
+				if (pred != leftDummy)
+				{
+					if (sameAsPred) p->range.a = pred->range.a;
+					p = remove(p, pred->range);
+				}
+				else p = remove(p, processedRange);
+			}
+			else {
+				if (sameAsPred) pred->range.b = processedRange.b;
+				p = remove(pred, processedRange);
+				
+			}
+			p = rem(p, segment, false);
+		}
+		else if (p->range.b != segment.b) {
+			if (p->isRThread) {
+				p->rLink = rem(p->rLink, segment, false);
+			}
+			else {
+				SegmentNode* succ = p->rLink;
+				SegmentNode* par = p;
+				while (succ != rightDummy && !succ->isLThread)
+				{
+					par = succ;
+					succ = succ->lLink;
+				}
+				if (par != p) {
+					par->lLink = rem(succ, segment, false);
+				}
+				else {
+					par->rLink = rem(succ, segment, false);
+				}
+			}
+		}
+		else 
+		{ 
+			SegmentNode* succ = inorderSuccessor(p);
+			bool sameAsSucc = succ != rightDummy && succ->range.a == p->range.b && succ->associatedSet == p->associatedSet;
+			if (sameAsSucc) {
+				if (!p->isRThread) {
+					if (succ != rightDummy) {
+						p->range.b = succ->range.b;
+						p = remove(p, succ->range);
+					}
+					else {
+						p = remove(p, p->range);
+					}
+				} 
+				else {
+					succ->range.a = p->range.a;
+					p = remove(succ, p->range);
+				}
+			}
+		}
+	}
+	return balance(p);
+}
+
+SegmentNode* SegmentNode::remove(SegmentNode* p, Segment range, bool leftSon)
+{
+	if (p == leftDummy || p == rightDummy)
+		return p;
+	if (range < p->range)
+	{
+		if (p->isLThread)
+			return p;
+		else
+			p->lLink = remove(p->lLink, range, true);
+	}
+	else if (range > p->range)
+	{
+		if (p->isRThread)
+			return p;
+		else
+			p->rLink = remove(p->rLink, range, false);
+	}
+	else
+	{
+		if (p->lLink == leftDummy && p->rLink == rightDummy) {
+			delete p;
+			p = NULL;
+			return p;
+		}
+		bool pLThread = p->isLThread;
+		SegmentNode* l = p->lLink;
+		bool pRThread = p->isRThread;
+		SegmentNode* r = p->rLink;
+		SegmentNode* predForDeletedNode = inorderPredecessor(p);
+		delete p;
+		if (pRThread)
+		{
+			if (!pLThread) {
+				if (l != leftDummy) {
+					l->rLink = r;
+				}
+				return l;
+			}
+			else {
+				if (leftSon) {
+					r->isLThread = true;
+					return l;
+				}
+				else {
+					l->isRThread = true;
+					return r;
+				}
+			}
+		}
+		if (r == rightDummy)
+		{
+			if (pLThread)
+				return r;
+			else {
+				l->isRThread = false;
+				l->rLink = r;
+				return l;
+			}
+		}
+		SegmentNode* min = findMin(r);
+		if (min != r) {
+			min->rLink = removeMin(r);
+			min->isRThread = pRThread;
+		}
+		min->lLink = l;
+		min->isLThread = pLThread;
+		if (predForDeletedNode != leftDummy)
+			predForDeletedNode->rLink = min;
+		return balance(min);
+	}
+	balance(p);
+}
+
+SegmentNode* SegmentNode::getOverlappingNodeForPoint(SegmentNode* root, const double point) {
+	if (root == NULL || root->range.isEmpty())
+		return NULL;
+	if (root->range.contains(point))
+		return root;
+	if (root->range.b < point)
+		return getOverlappingNodeForPoint(root->rLink, point);
+	 return getOverlappingNodeForPoint(root->lLink, point);
+}

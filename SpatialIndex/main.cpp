@@ -2,8 +2,8 @@
 #include <ctime>
 
 #include <stdio.h>
-#include "SegmentNode.h"
 #include "TreePrinter.h"
+#include "SegmentTree.h"
 #include <random>
 #include <Windows.h>
 #include <chrono>
@@ -13,21 +13,28 @@
 
 int main()
 {
-
+	SegmentTree tree;
 	TreePrinter printer = TreePrinter();
-	SegmentNode* root = NULL;
+	std::set<Segment> deletables;
 	int cnt = 0;
 	while (cnt < 100) {
 		cnt++;
 		double
-			/*left = std::rand() % 100,
-			length = std::rand() % 100 + 1,*/
 			left = std::rand() % 1000,
 			length = std::rand() % 100 + 1,
 			right = left + length;
-		SegmentNode::Insert(root, Segment(left, right));
-		printer.printToConsole(root);
+		tree.Insert(Segment(left, right));
+		deletables.insert(Segment(left, right));
+		printer.printToConsole(tree.root);
 	}
+
+	std::cout << "-------------------------------------------------------------------------------------\n";
+	
+	for (auto it = deletables.begin(); it != deletables.end(); it++) {
+		tree.root = SegmentNode::rem(tree.root, *it, true);
+		printer.printToConsole(tree.root);
+	}
+	tree.root = SegmentNode::rem(tree.root, Segment(41, 109), true);
 
 
 	/*auto start = std::chrono::high_resolution_clock::now();
