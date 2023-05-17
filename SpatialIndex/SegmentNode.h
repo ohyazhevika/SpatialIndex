@@ -18,12 +18,13 @@ public:
 
 	static SegmentNode* leftDummy;
 	static SegmentNode* rightDummy;
+	static Segment deletableTail;
 
 	static void Insert(SegmentNode*& root, Segment range);
 
 	static SegmentNode* Insert(SegmentNode* root, Segment range, std::set<Segment>& segmentaIds);
 
-	static SegmentNode* rem(SegmentNode* p, const Segment& segment, bool isSearchOfStart);
+	static std::pair<SegmentNode*, bool> rem(SegmentNode* p, const Segment& segment);
 	
 	// удаление ключа k из дерева с корнем в узле p
 	static SegmentNode* remove(SegmentNode* p, Segment range, bool leftSon = false);

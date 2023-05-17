@@ -132,11 +132,15 @@
     <ClCompile Include="SegmentNode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AVL-Tree.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="Segment.h" />
     <ClInclude Include="SegmentAssociatedList.h" />
     <ClInclude Include="SegmentNode.h" />
+    <ClInclude Include="SegmentNode1D.h" />
     <ClInclude Include="SegmentTree.h" />
+    <ClInclude Include="SegmentTree1D.h" />
+    <ClInclude Include="SegmentTree2D.h" />
     <ClInclude Include="TreePrinter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

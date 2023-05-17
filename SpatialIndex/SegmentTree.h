@@ -9,11 +9,11 @@ public:
 	SegmentNode* root;
 
 public:
-	SegmentTree();/*
+	SegmentTree();
 
-	SegmentTree(const SegmentTree& other);
+	//SegmentTree(const SegmentTree& other);
 	
-	~SegmentTree();*/
+	/*~SegmentTree();*/
 
 	void Insert(const Segment& segment);
 
@@ -21,9 +21,9 @@ public:
 
 	std::set<Segment> GetSegmentsForRangeQuery(const Segment& range);
 
-	//void Remove(const Segment& segment);
+	void Remove(const Segment& segment);
 
-	//void RemoveAll();
+	//void Delete(SegmentNode*& p);
 
 };
 
@@ -31,8 +31,27 @@ SegmentTree::SegmentTree() {
 	root = NULL;
 }
 
+//SegmentTree:: ~SegmentTree() {
+//	Delete(root);
+//}
+
+//void SegmentTree::Delete(SegmentNode*& p) {
+//	if (p) {
+//		Delete(p->lLink);
+//		Delete(p->rLink);
+//		delete p;
+//		p = NULL;
+//	}
+//}
+
 void SegmentTree::Insert(const Segment& segment) {
 	SegmentNode::Insert(root, segment);
+}
+
+void SegmentTree::Remove(const Segment& segment) {
+	std::pair<SegmentNode*, bool> pair = SegmentNode::rem(root, segment);
+	root = pair.first;
+
 }
 
 std::set<Segment> SegmentTree::GetSegmentsForStabbingPoint(const double point) {

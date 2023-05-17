@@ -77,8 +77,8 @@ struct Segment {
 	{
 		if (!overlaps(s))
 			return emptySegment();
-		int union_a = unionForOverlapping(s).a;
-		int overlap_a = overlap(s).a;
+		double union_a = unionForOverlapping(s).a;
+		double overlap_a = overlap(s).a;
 		return (union_a == overlap_a) ? emptySegment() : Segment(union_a, overlap_a);
 	}
 
@@ -87,8 +87,8 @@ struct Segment {
 	{
 		if (!overlaps(s))
 			return emptySegment();
-		int union_b = unionForOverlapping(s).b;
-		int overlap_b = overlap(s).a;
+		double union_b = unionForOverlapping(s).b;
+		double overlap_b = overlap(s).a;
 		return (union_b == overlap_b) ? emptySegment() : Segment(union_b, overlap_b);
 	}
 

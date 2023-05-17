@@ -113,22 +113,16 @@ std::pair<SegmentNode*, bool> SegmentNode::rem(SegmentNode* p, const Segment& se
 				if (p->isLThread) {
 					std::pair<SegmentNode*, bool> pair = std::make_pair(p->rLink, p->isRThread);
 					if (segment.b > p->range.b && !p->isRThread) {
-						SegmentNode* rightKid = p->rLink;
-						rightKid->associatedSet.erase(segment);
-						if (rightKid->associatedSet.empty())
-						{
-							p->isRThread = rightKid->isRThread;
-							p->rLink = rightKid->rLink;
-							delete rightKid;
-							pair = std::make_pair(p->rLink, p->isRThread);
-						}
+						pair = rem(p->rLink, segment);
+						p->rLink = pair.first;
+						p->isRThread = pair.second;
 					}
 					if (!isEmptyNode) pred->range = Segment(pred->range.a, p->range.b);
 					if (pred->rLink == p) {
 						pred = remove(pred, p->range);
-						return std::make_pair(pred, pair.second);
+						return std::make_pair(pred->rLink, pair.second);
 					}
-					pred->rLink = remove(pred->rLink, p->range);
+					pred = remove(pred, p->range);
 					SegmentNode* returnedNode = !pair.second ? pair.first : pred;
 					return std::make_pair(returnedNode, pair.second);
 				}
