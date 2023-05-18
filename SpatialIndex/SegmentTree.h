@@ -49,9 +49,7 @@ void SegmentTree::Insert(const Segment& segment) {
 }
 
 void SegmentTree::Remove(const Segment& segment) {
-	std::pair<SegmentNode*, bool> pair = SegmentNode::rem(root, segment);
-	root = pair.first;
-
+	root = SegmentNode:: rem(root, segment, false);
 }
 
 std::set<Segment> SegmentTree::GetSegmentsForStabbingPoint(const double point) {
