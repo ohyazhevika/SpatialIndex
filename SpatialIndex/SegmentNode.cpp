@@ -111,94 +111,53 @@ std::pair<SegmentNode*, bool> SegmentNode::rem(SegmentNode* p, const Segment& se
 			bool isEmptyNode = p->associatedSet.empty();
 			if (isEmptyNode || mergeableWithPred) {
 				if (p->isLThread) {
-					std::pair<SegmentNode*, bool> pair = std::make_pair(p->rLink, p->isRThread);
-					if (segment.b > p->range.b && !p->isRThread) {
+					if (!isEmptyNode) pred->range = Segment(pred->range.a, p->range.b);
+					if (!p->isRThread && p->rLink) {
 						SegmentNode* rightKid = p->rLink;
 						rightKid->associatedSet.erase(segment);
-						if (rightKid->associatedSet.empty())
-						{
-							p->isRThread = rightKid->isRThread;
-							p->rLink = rightKid->rLink;
-							delete rightKid;
-							pair = std::make_pair(p->rLink, p->isRThread);
-						}
+						rightKid->lLink = p->lLink;
 					}
-					if (!isEmptyNode) pred->range = Segment(pred->range.a, p->range.b);
-					if (pred->rLink == p) {
-						pred = remove(pred, p->range);
-						return std::make_pair(pred, pair.second);
-					}
-					pred->rLink = remove(pred->rLink, p->range);
-					SegmentNode* returnedNode = !pair.second ? pair.first : pred;
-					return std::make_pair(returnedNode, pair.second);
-				}
-				else if (!p->lLink) {
-					if (segment.b > p->range.b && !p->isRThread) {
-						std::pair<SegmentNode*, bool> pair(rem(p->rLink, segment));
-						p->rLink = pair.first;
-						p->isRThread = pair.second;
-					}
-					SegmentNode* returnedNode;
-					if (p->isRThread) {
-						returnedNode = leftDummy;
+					if (pred->rLink != p) {
+						SegmentNode* rightKid = p->rLink;
+						delete p;
+						return std::make_pair(rightKid, false);
 					}
 					else {
-						if (p->rLink) {
-							p->rLink->lLink = leftDummy;
-							p->rLink->isLThread = false;
-						}
-						returnedNode = p->rLink;
-					} 
-					delete p;
-					return std::make_pair(returnedNode, false);
+						SegmentNode* rightKid = p->rLink;
+						bool isrthread = p->isRThread;
+						delete p;
+						return std::make_pair(rightKid, isrthread);
+					}
+				}
+				else if (!p->lLink) {
+					if (!p->isRThread && p->rLink) {
+						SegmentNode* rightKid = p->rLink;
+						rightKid->associatedSet.erase(segment);
+						rightKid->isLThread = false;
+						rightKid->lLink = leftDummy;
+						delete p;
+						return std::make_pair(rightKid, false);
+					}
+					else {
+						delete p;
+						return std::make_pair(nullptr, false);
+					}
 				}
 				else {
-					if (!isEmptyNode) p->range = Segment(pred->range.a, p->range.b);
-					p = remove(p, pred->range);
+					if (isEmptyNode) {
+						p->range = pred->range;
+						if (p->lLink->rLink == p) {
+							p->lLink = p->lLink->lLink;
+							p->isLThread = p->lLink->isLThread;
+						}
+						else {
+							p->lLink = remove(p->lLink, pred->range);
+						}
+					}
 				}
 			}
 			if (segment.b == p->range.b) {
 
-				SegmentNode* succ = inorderSuccessor(p);
-				bool mergeableWithSucc = (succ && p->associatedSet == succ->associatedSet);
-				bool isEmptyNode = p->associatedSet.empty();
-				if (isEmptyNode || mergeableWithSucc) {
-					if (p->isRThread) {
-						std::pair<SegmentNode*, bool> pair = std::make_pair(p->lLink, p->isLThread);
-						if (!isEmptyNode) succ->range = Segment(p->range.a,succ->range.b);
-						if (succ->lLink == p) {
-							succ = remove(succ, p->range);
-							return std::make_pair(succ->rLink, pair.second);
-						}
-						succ = remove(succ, p->range);
-						SegmentNode* returnedNode = !pair.second ? pair.first : succ;
-						return std::make_pair(returnedNode, pair.second);
-					}
-					else if (!p->rLink) {
-						if (segment.b > p->range.b && !p->isRThread) {
-							std::pair<SegmentNode*, bool> pair(rem(p->rLink, segment));
-							p->rLink = pair.first;
-							p->isRThread = pair.second;
-						}
-						SegmentNode* returnedNode;
-						if (p->isLThread) {
-							returnedNode = rightDummy;
-						}
-						else {
-							if (p->lLink) {
-								p->lLink->rLink = leftDummy;
-								p->lLink->isRThread = false;
-							}
-							returnedNode = p->rLink;
-						}
-						delete p;
-						return std::make_pair(returnedNode, false);
-					}
-					else {
-						if (!isEmptyNode) p->range = Segment(p->range.a, succ->range.b);
-						p = remove(p, succ->range);
-					}
-				}
 			}
 		}
 	}

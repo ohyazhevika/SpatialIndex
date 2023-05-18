@@ -26,11 +26,11 @@ int main()
 	SegmentTree tree;
 	std::set<Segment> segs;
 	int count = 0;
-	while (count < 100) {
+	while (count < 10) {
 		count++;
 		double
-			left = std::rand() % 1000,
-			length = std::rand() % 100 + 1,
+			left = std::rand() % 10,
+			length = std::rand() % 10 + 1,
 			right = left + length;
 		Segment seg(left, right);
 		segs.insert(seg);
