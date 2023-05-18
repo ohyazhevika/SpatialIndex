@@ -47,7 +47,7 @@ private:
 
 public:
 	AVLTree() {
-		root = nullptr;
+		root = nullptr;;
 	}
 
 	StoredObjectNode* Insert(StoredObject obj) {
@@ -56,12 +56,16 @@ public:
 		return nodeForObject;
 	}
 
-	void Remove(StoredObject obj) {
+	bool Remove(StoredObject obj) {
 		root = remove(root, obj);
 	}
 
 	void ResetNodeColors() {
 		ResetSubtreeColors(root);
+	}
+
+	StoredObjectNode* find(const StoredObject& obj) {
+		return find(root, obj);
 	}
 
 	~AVLTree() {
@@ -189,5 +193,18 @@ private:
 			return balance(min);
 		}
 		return balance(p);
+	}
+
+	StoredObjectNode* find(StoredObjectNode* p, const StoredObject& obj) {
+		if (!p) return NULL;
+		if (obj < p->object) {
+			return find(p->left, obj);
+		}
+		else if (p->object < obj) {
+			return find(p->right, obj);
+		}
+		else {
+			return p;
+		}
 	}
 };

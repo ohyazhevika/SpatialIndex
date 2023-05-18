@@ -101,7 +101,6 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 	}
 	Segment C = p->range.overlap(segment);
 	SegmentNode* replacementNode(p);
-	Segment pRange(p->range);
 	if (!C.isEmpty()) {
 		if (p->associatedSet.erase(segment))
 		{
@@ -110,7 +109,7 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 			bool isEmptyNode = p->associatedSet.empty();
 			if (isEmptyNode || mergeableWithPred) {
 				if (!isEmptyNode) {
-					pred->range = Segment(pred->range.a, pRange.b);
+					pred->range = Segment(pred->range.a, p->range.b);
 				}
 				if (p->lLink == leftDummy && p->rLink == rightDummy) {
 					delete p;

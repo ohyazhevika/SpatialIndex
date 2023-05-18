@@ -16,7 +16,9 @@ public:
 
 	~SegmentTree2D();
 
-	void Insert(StoredObject obj);
+	void Insert(const StoredObject& obj);
+
+	void Remove(const StoredObject& obj);
 
 	std::set<StoredObject> getOverlappedByRectangle(const Segment& xrange, const Segment& yrange);
 
@@ -27,13 +29,21 @@ SegmentTree2D::SegmentTree2D(): capacity(0) {}
 
 SegmentTree2D::~SegmentTree2D() {}
 
-void SegmentTree2D:: Insert(StoredObject obj) {
+void SegmentTree2D:: Insert(const StoredObject& obj) {
 	StoredObjectNode* newStoredObject = cTree.Insert(obj);
 	if (newStoredObject) {
 		xTree.Insert(obj.xRange, newStoredObject);
 		yTree.Insert(obj.yRange, newStoredObject);
-
 		capacity++;
+	}
+}
+
+void SegmentTree2D::Remove(const StoredObject& obj) {
+	StoredObjectNode* removableNode = cTree.find(obj);
+	if (removableNode) {
+		xTree.Remove(obj.xRange, removableNode);
+		yTree.Remove(obj.yRange, removableNode);
+		capacity--;
 	}
 }
 

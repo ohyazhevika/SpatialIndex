@@ -8,6 +8,8 @@ private:
 	SegmentNode1D* root;
 	static SegmentNode1D* leftDummy;
 	static SegmentNode1D* rightDummy;
+	static SegmentNode1D* mergeableTail;
+	static Segment tailSuccessorRange;
 
 public:
 	SegmentTree1D();
@@ -21,7 +23,7 @@ public:
 	std::set<StoredObjectNode*> GetSegmentsForRangeQuery(const Segment& range);
 
 	// если реализую remove - буду богиней
-	//void Remove(const Segment& segment);
+	void Remove(const Segment& segment, StoredObjectNode* objPtr);
 
 
 private:
@@ -29,6 +31,10 @@ private:
 	void Insert(SegmentNode1D*&, const Segment&, StoredObjectNode*);
 	
 	SegmentNode1D* Insert(SegmentNode1D*, Segment, std::set<StoredObjectNode*>);
+
+	SegmentNode1D* Remove(SegmentNode1D* p, const Segment& segment, StoredObjectNode* objPtr, bool leftSon);
+
+	SegmentNode1D* Remove(SegmentNode1D* p, const Segment& segment, bool leftSon);
 
 	int height(const SegmentNode1D*);
 
@@ -51,10 +57,14 @@ private:
 	SegmentNode1D* inorderPredecessor(SegmentNode1D* p);
 
 	SegmentNode1D* findMin(SegmentNode1D* p);
+
+	SegmentNode1D* removeMin(SegmentNode1D* p);
 };
 
 SegmentNode1D* SegmentTree1D::leftDummy = NULL;
 SegmentNode1D* SegmentTree1D::rightDummy = NULL;
+SegmentNode1D* SegmentTree1D::mergeableTail = NULL;
+Segment SegmentTree1D::tailSuccessorRange = Segment();
 
 SegmentTree1D::SegmentTree1D() {
 	root = NULL;
@@ -66,6 +76,17 @@ SegmentTree1D::~SegmentTree1D() {
 
 void SegmentTree1D::Insert(const Segment& segment, StoredObjectNode* objPtr) {
 	Insert(root, segment, objPtr);
+}
+
+void SegmentTree1D::Remove(const Segment& segment, StoredObjectNode* objPtr) {
+	root = Remove(root, segment, objPtr, false);
+	if (mergeableTail) {
+		Segment newRange = Segment(mergeableTail->range.a, tailSuccessorRange.b);
+		root = Remove(root, tailSuccessorRange, false);
+		mergeableTail->range = newRange;
+		mergeableTail = NULL;
+		tailSuccessorRange = Segment();
+	}
 }
 
 std::set<StoredObjectNode*> SegmentTree1D::GetSegmentsForStabbingPoint(const double point) {
@@ -176,6 +197,167 @@ SegmentNode1D* SegmentTree1D::Insert(SegmentNode1D* p, Segment segment, std::set
 		}
 	}
 	return balance(p);
+}
+
+SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, StoredObjectNode* objPtr, bool leftSon) {
+	if (!p) return NULL;
+
+	if (segment.a < p->range.a && !p->isLThread) {
+		p->lLink = Remove(p->lLink, segment, objPtr, true);
+	}
+
+	Segment C = p->range.overlap(segment);
+	SegmentNode1D* replacementNode(p);
+	if (!C.isEmpty() && p->associatedSet.erase(objPtr)) {
+		SegmentNode1D* pred = inorderPredecessor(p);
+		bool mergeableWithPred = (pred && p->associatedSet == pred->associatedSet);
+		bool isEmptyNode = p->associatedSet.empty();
+		if (isEmptyNode || mergeableWithPred) {
+			if (!isEmptyNode) {
+				pred->range = Segment(pred->range.a, p->range.b);
+			}
+			if (p->lLink == leftDummy && p->rLink == rightDummy) {
+				delete p;
+				p = NULL;
+				return p;
+			}
+			bool pLThread = p->isLThread;
+			SegmentNode1D* l = p->lLink;
+			bool pRThread = p->isRThread;
+			SegmentNode1D* r = p->rLink;
+			delete p;
+			if (pRThread) {
+				if (!pLThread) {
+					if (l != leftDummy) {
+						l->rLink = r;
+						replacementNode = l;
+					}
+					else {
+						return l;
+					}
+				}
+				else {
+					if (leftSon) {
+						r->isLThread = true;
+						return l;
+					}
+					else {
+						l->isRThread = true;
+						return r;
+					}
+				}
+			}
+			else if (r == rightDummy)
+			{
+				if (pLThread)
+					return r;
+				else {
+					l->isRThread = false;
+					l->rLink = r;
+					replacementNode = l;
+				}
+			}
+			else {
+				SegmentNode1D* min = findMin(r);
+				min->associatedSet.erase(objPtr);
+				if (min != r) {
+					min->rLink = removeMin(r);
+					min->isRThread = pRThread;
+				}
+				min->lLink = l;
+				min->isLThread = pLThread;
+				if (pred != leftDummy)
+					pred->rLink = min;
+				replacementNode = min;
+			}
+			p = replacementNode;
+		}
+		if (p && segment.b == p->range.b) {
+			SegmentNode1D* succ = inorderSuccessor(p);
+			if (succ) {
+				mergeableTail = p;
+				tailSuccessorRange = succ->range;
+			}
+		}
+	}
+
+	if (segment.b > p->range.b && !p->isRThread) {
+		p->rLink = Remove(p->rLink, segment, objPtr, false);
+	}
+	return balance(p);
+}
+
+SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, bool leftSon) {
+	if (p == leftDummy || p == rightDummy)
+		return p;
+	if (segment < p->range)
+	{
+		if (p->isLThread)
+			return p;
+		else
+			p->lLink = Remove(p->lLink, segment, true);
+	}
+	else if (segment > p->range)
+	{
+		if (p->isRThread)
+			return p;
+		else
+			p->rLink = Remove(p->rLink, segment, false);
+	}
+	else
+	{
+		if (p->lLink == leftDummy && p->rLink == rightDummy) {
+			delete p;
+			p = NULL;
+			return p;
+		}
+		bool pLThread = p->isLThread;
+		SegmentNode1D* l = p->lLink;
+		bool pRThread = p->isRThread;
+		SegmentNode1D* r = p->rLink;
+		SegmentNode1D* predForDeletedNode = inorderPredecessor(p);
+		delete p;
+		if (pRThread)
+		{
+			if (!pLThread) {
+				if (l != leftDummy) {
+					l->rLink = r;
+				}
+				return l;
+			}
+			else {
+				if (leftSon) {
+					r->isLThread = true;
+					return l;
+				}
+				else {
+					l->isRThread = true;
+					return r;
+				}
+			}
+		}
+		if (r == rightDummy)
+		{
+			if (pLThread)
+				return r;
+			else {
+				l->isRThread = false;
+				l->rLink = r;
+				return l;
+			}
+		}
+		SegmentNode1D* min = findMin(r);
+		if (min != r) {
+			min->rLink = removeMin(r);
+			min->isRThread = pRThread;
+		}
+		min->lLink = l;
+		min->isLThread = pLThread;
+		if (predForDeletedNode != leftDummy)
+			predForDeletedNode->rLink = min;
+		return balance(min);
+	}
+	balance(p);
 }
 
 int SegmentTree1D::height(const SegmentNode1D* node) {
@@ -297,4 +479,24 @@ SegmentNode1D* SegmentTree1D::inorderPredecessor(SegmentNode1D* p)
 SegmentNode1D* SegmentTree1D::findMin(SegmentNode1D* p)
 {
 	return (p->isLThread || p->lLink == leftDummy) ? p : findMin(p->lLink);
+}
+
+SegmentNode1D* SegmentTree1D::removeMin(SegmentNode1D* p) {
+	if (p->lLink == leftDummy)
+	{
+		if (p->isRThread)
+			return p->lLink;
+		else return p->rLink;
+	}
+	else if (p->isLThread)
+	{
+		if (p->isRThread)
+		{
+			p->rLink->isLThread = true;
+			return p;
+		}
+		else return p->rLink;
+	}
+	p->lLink = removeMin(p->lLink);
+	balance(p);
 }
