@@ -111,30 +111,33 @@ std::pair<SegmentNode*, bool> SegmentNode::rem(SegmentNode* p, const Segment& se
 			bool isEmptyNode = p->associatedSet.empty();
 			if (isEmptyNode || mergeableWithPred) {
 				if (p->isLThread) {
-					if (!isEmptyNode) pred->range = Segment(pred->range.a, p->range.b);
+					if (!isEmptyNode) 
+						pred->range = Segment(pred->range.a, p->range.b); 
 					if (!p->isRThread && p->rLink) {
-						SegmentNode* rightKid = p->rLink;
-						rightKid->associatedSet.erase(segment);
-						rightKid->lLink = p->lLink;
+						SegmentNode* succ = inorderSuccessor(p);
+						succ->associatedSet.erase(segment);
+						succ->lLink = p->lLink;
 					}
 					if (pred->rLink != p) {
-						SegmentNode* rightKid = p->rLink;
+						SegmentNode* returnedNode = (!p->isRThread) ? p->rLink : p->lLink;
+						bool isrthread = p -> isRThread;
 						delete p;
-						return std::make_pair(rightKid, false);
+						return std::make_pair(returnedNode, isrthread);
 					}
 					else {
-						SegmentNode* rightKid = p->rLink;
 						bool isrthread = p->isRThread;
+						SegmentNode* returnedNode =  p->rLink;
 						delete p;
-						return std::make_pair(rightKid, isrthread);
+						return std::make_pair(returnedNode, isrthread);
 					}
 				}
 				else if (!p->lLink) {
 					if (!p->isRThread && p->rLink) {
+						SegmentNode* succ = inorderSuccessor(p);
 						SegmentNode* rightKid = p->rLink;
-						rightKid->associatedSet.erase(segment);
-						rightKid->isLThread = false;
-						rightKid->lLink = leftDummy;
+						succ->associatedSet.erase(segment);
+						succ->isLThread = false;
+						succ->lLink = leftDummy;
 						delete p;
 						return std::make_pair(rightKid, false);
 					}
@@ -144,16 +147,25 @@ std::pair<SegmentNode*, bool> SegmentNode::rem(SegmentNode* p, const Segment& se
 					}
 				}
 				else {
-					if (isEmptyNode) {
+					if (isEmptyNode)
+					{
 						p->range = pred->range;
-						if (p->lLink->rLink == p) {
-							p->lLink = p->lLink->lLink;
-							p->isLThread = p->lLink->isLThread;
-						}
-						else {
-							p->lLink = remove(p->lLink, pred->range);
-						}
 					}
+					else
+						p->range = Segment(p->range.a, pred->range.b);
+
+					if (p->lLink->rLink == p) {
+						SegmentNode* leftKid = p->lLink;
+						p->isLThread = leftKid->isLThread;
+						p->lLink = leftKid->lLink;
+						if (!leftKid->isLThread && leftKid->lLink)
+							leftKid->lLink->rLink = p;
+						delete leftKid;
+					}
+					else {
+						p->lLink = remove(p->lLink, pred->range);
+					}
+
 				}
 			}
 			if (segment.b == p->range.b) {

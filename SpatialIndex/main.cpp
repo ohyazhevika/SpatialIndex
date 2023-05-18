@@ -26,11 +26,11 @@ int main()
 	SegmentTree tree;
 	std::set<Segment> segs;
 	int count = 0;
-	while (count < 10) {
+	while (count < 100) {
 		count++;
 		double
-			left = std::rand() % 10,
-			length = std::rand() % 10 + 1,
+			left = std::rand() % 1000,
+			length = std::rand() % 101 + 1,
 			right = left + length;
 		Segment seg(left, right);
 		segs.insert(seg);
@@ -40,14 +40,15 @@ int main()
 		std::cout << "\n\n";
 	}
 	while (!segs.empty()) {
-		Segment seg = *(segs.begin());
+		Segment seg = *(segs.crbegin());
 		segs.erase(seg);
 		tree.Remove(seg);
 		std::cout << "Remove " << "[" << seg.a << ", " << seg.b << "]\n\n";
 		printer.printToConsole(tree.root);
 		std::cout << "\n\n";
 	}
-
+	printer.printToConsole(tree.root);
+	segs.begin();
 	/*SegmentTree2D tree;
 	tree.Insert(storedObject("R1", 1, 2, 3, 4));
 	tree.Insert(storedObject("R2", -1, 0.499, 3, 4));
