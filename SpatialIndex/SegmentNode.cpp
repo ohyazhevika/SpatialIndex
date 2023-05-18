@@ -3,15 +3,15 @@
 SegmentNode* SegmentNode::leftDummy = NULL;
 SegmentNode* SegmentNode::rightDummy = NULL;
 
-Segment SegmentNode::deletableTail = Segment();
+SegmentNode* SegmentNode::deletableTail = NULL;
+Segment SegmentNode::tailSuccesorRange;
 
-
-SegmentNode::SegmentNode(Segment range) :	range(range),
-									rLink(rightDummy),
-									lLink(leftDummy),
-									height(1),
-									isLThread(false),
-									isRThread(false) {}
+SegmentNode::SegmentNode(Segment range) : range(range),
+rLink(rightDummy),
+lLink(leftDummy),
+height(1),
+isLThread(false),
+isRThread(false) {}
 
 
 int SegmentNode::getHeight(const SegmentNode* node)
@@ -33,7 +33,7 @@ void SegmentNode::fixHeight(SegmentNode* node)
 	node->height = ((heightL > heightR) ? heightL : heightR) + 1;
 }
 
-SegmentNode* SegmentNode::rotateright(SegmentNode* p) // правый поворот вокруг p
+SegmentNode* SegmentNode::rotateright(SegmentNode* p) // ГЇГ°Г ГўГ»Г© ГЇГ®ГўГ®Г°Г®ГІ ГўГ®ГЄГ°ГіГЈ p
 {
 	SegmentNode* q = p->lLink;
 	if (q->isRThread == false) {
@@ -49,7 +49,7 @@ SegmentNode* SegmentNode::rotateright(SegmentNode* p) // правый поворот вокруг p
 	return q;
 }
 
-SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // левый поворот вокруг q
+SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // Г«ГҐГўГ»Г© ГЇГ®ГўГ®Г°Г®ГІ ГўГ®ГЄГ°ГіГЈ q
 {
 	SegmentNode* p = q->rLink;
 	if (p->isLThread == false) {
@@ -65,7 +65,7 @@ SegmentNode* SegmentNode::rotateleft(SegmentNode* q) // левый поворот вокруг q
 	return p;
 }
 
-SegmentNode* SegmentNode::balance(SegmentNode* p) // балансировка узла p
+SegmentNode* SegmentNode::balance(SegmentNode* p) // ГЎГ Г«Г Г­Г±ГЁГ°Г®ГўГЄГ  ГіГ§Г«Г  p
 {
 	if (!p) return NULL;
 	fixHeight(p);
@@ -88,16 +88,16 @@ SegmentNode* SegmentNode::balance(SegmentNode* p) // балансировка узла p
 void SegmentNode::Insert(SegmentNode*& root, Segment range) {
 	std::set<Segment> associatedSet = std::set<Segment>();
 	associatedSet.insert(range);
-	root = Insert (root, range, associatedSet);
+	root = Insert(root, range, associatedSet);
 }
 
-// из узла p удаляет сегмент segment, если узел теперь пуст или может слиться с предыдущим - сливаем;
-// возвращаем указатель на себя же; если смержили - то возвращается указатель на предшественника прямого
+// ГЁГ§ ГіГ§Г«Г  p ГіГ¤Г Г«ГїГҐГІ Г±ГҐГЈГ¬ГҐГ­ГІ segment, ГҐГ±Г«ГЁ ГіГ§ГҐГ« ГІГҐГЇГҐГ°Гј ГЇГіГ±ГІ ГЁГ«ГЁ Г¬Г®Г¦ГҐГІ Г±Г«ГЁГІГјГ±Гї Г± ГЇГ°ГҐГ¤Г»Г¤ГіГ№ГЁГ¬ - Г±Г«ГЁГўГ ГҐГ¬;
+// ГўГ®Г§ГўГ°Г Г№Г ГҐГ¬ ГіГЄГ Г§Г ГІГҐГ«Гј Г­Г  Г±ГҐГЎГї Г¦ГҐ; ГҐГ±Г«ГЁ Г±Г¬ГҐГ°Г¦ГЁГ«ГЁ - ГІГ® ГўГ®Г§ГўГ°Г Г№Г ГҐГІГ±Гї ГіГЄГ Г§Г ГІГҐГ«Гј Г­Г  ГЇГ°ГҐГ¤ГёГҐГ±ГІГўГҐГ­Г­ГЁГЄГ  ГЇГ°ГїГ¬Г®ГЈГ®
 SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftSon = false) {
 	if (!p) return NULL;
 
 	if (segment.a < p->range.a && !p->isLThread) {
-		p->lLink = rem (p->lLink, segment, true);
+		p->lLink = rem(p->lLink, segment, true);
 	}
 	Segment C = p->range.overlap(segment);
 	SegmentNode* replacementNode(p);
@@ -109,6 +109,9 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 			bool mergeableWithPred = (pred && p->associatedSet == pred->associatedSet);
 			bool isEmptyNode = p->associatedSet.empty();
 			if (isEmptyNode || mergeableWithPred) {
+				if (!isEmptyNode) {
+					pred->range = Segment(pred->range.a, pRange.b);
+				}
 				if (p->lLink == leftDummy && p->rLink == rightDummy) {
 					delete p;
 					p = NULL;
@@ -121,9 +124,6 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 				delete p;
 				if (pRThread)
 				{
-					if (!isEmptyNode) {
-						pred->range = Segment(pred->range.a, pRange.b);
-					}
 					if (!pLThread) {
 						if (l != leftDummy) {
 							l->rLink = r;
@@ -135,12 +135,10 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 					}
 					else {
 						if (leftSon) {
-							pred->range = (isEmptyNode) ? pred->range : Segment(pred->range.a, pRange.b);
 							r->isLThread = true;
 							return l;
 						}
 						else {
-							pred->range = (isEmptyNode) ? pred->range : Segment(pred->range.a, pRange.b);
 							l->isRThread = true;
 							return r;
 						}
@@ -157,9 +155,6 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 					}
 				}
 				else {
-					if (!isEmptyNode) {
-						pred->range = Segment(pred->range.a, pRange.b);
-					}
 					SegmentNode* min = findMin(r);
 					min->associatedSet.erase(segment);
 					if (min != r) {
@@ -174,8 +169,12 @@ SegmentNode* SegmentNode::rem(SegmentNode* p, const Segment& segment, bool leftS
 				}
 				p = replacementNode;
 			}
-			if (segment.b == p->range.b) {
-
+			if (p && segment.b == p->range.b) {
+				SegmentNode* succ = inorderSuccessor(p);
+				if (succ) {
+					deletableTail = p;
+					tailSuccesorRange = succ->range;
+				}
 			}
 		}
 	}
@@ -191,7 +190,7 @@ SegmentNode* SegmentNode::Insert(SegmentNode* root, Segment range, std::set<Segm
 		newNode->associatedSet = segmentsIds;
 		return newNode;
 	}
-	
+
 	Segment rootRange = root->range;
 	Segment leftForInsertion, C, rightForInsertion;
 	std::set<Segment> R = root->associatedSet;
@@ -428,5 +427,5 @@ SegmentNode* SegmentNode::getOverlappingNodeForPoint(SegmentNode* root, const do
 		return root;
 	if (root->range.b < point)
 		return getOverlappingNodeForPoint(root->rLink, point);
-	 return getOverlappingNodeForPoint(root->lLink, point);
+	return getOverlappingNodeForPoint(root->lLink, point);
 }

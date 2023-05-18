@@ -50,6 +50,14 @@ void SegmentTree::Insert(const Segment& segment) {
 
 void SegmentTree::Remove(const Segment& segment) {
 	root = SegmentNode:: rem(root, segment, false);
+	SegmentNode* deletableTail = SegmentNode::deletableTail;
+	if (deletableTail)
+	{
+		Segment newRange = Segment(deletableTail->range.a, SegmentNode::tailSuccesorRange.b);
+		root = SegmentNode::remove(root, SegmentNode::tailSuccesorRange, false);
+		deletableTail->range = newRange;
+		SegmentNode::deletableTail = NULL;
+	}
 }
 
 std::set<Segment> SegmentTree::GetSegmentsForStabbingPoint(const double point) {

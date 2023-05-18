@@ -29,8 +29,8 @@ int main()
 	while (count < 100) {
 		count++;
 		double
-			left = std::rand() % 1001,
-			length = std::rand() % 101 + 1,
+			left = std::rand() % 1003,
+			length = std::rand() % 121 + 1,
 			right = left + length;
 		Segment seg(left, right);
 		segs.insert(seg);
@@ -41,6 +41,9 @@ int main()
 	}
 	while (!segs.empty()) {
 		Segment seg = *(segs.crbegin());
+		if (seg == Segment(0, 11)) {
+			std::cout << "";
+		}
 		segs.erase(seg);
 		tree.Remove(seg);
 		std::cout << "Remove " << "[" << seg.a << ", " << seg.b << "]\n\n";
