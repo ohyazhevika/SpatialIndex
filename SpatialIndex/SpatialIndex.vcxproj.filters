@@ -59,7 +59,7 @@
     <ClInclude Include="SegmentTree1D.h">
       <Filter>Header Files\SpatialTree</Filter>
     </ClInclude>
-    <ClInclude Include="SegmentTree2D.h">
+    <ClInclude Include="SpatialSegmentTree.h">
       <Filter>Header Files\SpatialTree</Filter>
     </ClInclude>
   </ItemGroup>
