@@ -3,7 +3,10 @@
 #include "AVL-Tree.h"
 #include <set>
 
+template<std::size_t dimensions>
 struct SegmentNode1D {
+	typedef StoredObjectNode<dimensions>	StoredObjectNode;
+
 public:
 	Segment range;								// атомарный сегмент
 	std::set<StoredObjectNode*> associatedSet;	// ассоциированный список (список указателей на объекты, включающих в себя данный атомарный сегмент)

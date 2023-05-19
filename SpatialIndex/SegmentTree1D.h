@@ -1,8 +1,11 @@
 #pragma once
 #include "SegmentNode1D.h"
 
-
+template<std::size_t dimensions>
 class SegmentTree1D {
+
+	typedef SegmentNode1D<dimensions>		SegmentNode1D;
+	typedef StoredObjectNode<dimensions>	StoredObjectNode;
 
 private:
 	SegmentNode1D* root;
@@ -20,7 +23,7 @@ public:
 
 	std::set<StoredObjectNode*> GetSegmentsForStabbingPoint(const double point);
 
-	std::set<StoredObjectNode*> GetSegmentsForRangeQuery(const Segment& range);
+	std::set<StoredObjectNode*> GetOverlappedObjects(const Segment& range);
 
 	void Remove(const Segment& segment, StoredObjectNode* objPtr);
 
@@ -49,6 +52,8 @@ private:
 
 	SegmentNode1D* getOverlappingNodeForPoint(SegmentNode1D* p, const double point);
 
+	SegmentNode1D* findOverlappingNode(SegmentNode1D* p, const Segment& range);
+
 	void Delete(SegmentNode1D*&);
 
 	SegmentNode1D* inorderSuccessor(SegmentNode1D* p);
@@ -59,25 +64,36 @@ private:
 
 	SegmentNode1D* removeMin(SegmentNode1D* p);
 };
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::leftDummy = NULL;
 
-SegmentNode1D* SegmentTree1D::leftDummy = NULL;
-SegmentNode1D* SegmentTree1D::rightDummy = NULL;
-SegmentNode1D* SegmentTree1D::mergeableTail = NULL;
-Segment SegmentTree1D::tailSuccessorRange = Segment();
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::rightDummy = NULL;
 
-SegmentTree1D::SegmentTree1D() {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::mergeableTail = NULL;
+
+template <std::size_t dimensions>
+Segment SegmentTree1D<dimensions>::tailSuccessorRange = Segment();
+
+
+template <std::size_t dimensions>
+SegmentTree1D<dimensions>::SegmentTree1D() {
 	root = NULL;
 }
 
-SegmentTree1D::~SegmentTree1D() {
+template <std::size_t dimensions>
+SegmentTree1D<dimensions>::~SegmentTree1D() {
 	Delete(root);
 }
 
-void SegmentTree1D::Insert(const Segment& segment, StoredObjectNode* objPtr) {
+template <std::size_t dimensions>
+void SegmentTree1D<dimensions>::Insert(const Segment& segment, StoredObjectNode* objPtr) {
 	Insert(root, segment, objPtr);
 }
 
-void SegmentTree1D::Remove(const Segment& segment, StoredObjectNode* objPtr) {
+template <std::size_t dimensions>
+void SegmentTree1D<dimensions>::Remove(const Segment& segment, StoredObjectNode* objPtr) {
 	root = Remove(root, segment, objPtr, false);
 	if (mergeableTail) {
 		Segment newRange = Segment(mergeableTail->range.a, tailSuccessorRange.b);
@@ -88,36 +104,44 @@ void SegmentTree1D::Remove(const Segment& segment, StoredObjectNode* objPtr) {
 	}
 }
 
-std::set<StoredObjectNode*> SegmentTree1D::GetSegmentsForStabbingPoint(const double point) {
+template <std::size_t dimensions>
+std::set<StoredObjectNode<dimensions>*> SegmentTree1D<dimensions>::GetSegmentsForStabbingPoint(const double point) {
 	SegmentNode1D* node = getOverlappingNodeForPoint(root, point);
 	if (!node)
 		return std::set<StoredObjectNode*>();
 	else return node->associatedSet;
 }
 
-std::set<StoredObjectNode*> SegmentTree1D:: GetSegmentsForRangeQuery(const Segment& range) {
+template<std::size_t dimensions>
+std::set<StoredObjectNode<dimensions>*> SegmentTree1D<dimensions>::GetOverlappedObjects(const Segment& range) {
 	std::set<StoredObjectNode*> answer;
-	SegmentNode1D* node = getOverlappingNodeForPoint(root, range.a);
-	if (node == NULL) {
-		node = findMin(root);
-		if (node->range.a > range.b)
-			return answer;
-	}
+	SegmentNode1D* overlap = findOverlappingNode(root, range);
+	if (overlap) {
+		SegmentNode1D* p = overlap;
+		do {
+			answer.insert(p->associatedSet.begin(), p->associatedSet.end());
+			p = inorderPredecessor(p);
+		} while (p && p->range.overlapsOrTouches(range));
 
-	do {
-		answer.insert(node->associatedSet.begin(), node->associatedSet.end());
-		node = inorderSuccessor(node);
-	} while (node != NULL && node->range.a <= range.b);
+		p = inorderSuccessor(overlap);
+
+		while (p && p->range.overlapsOrTouches(range)) {
+			answer.insert(p->associatedSet.begin(), p->associatedSet.end());
+			p = inorderSuccessor(p);
+		};
+	}
 	return answer;
 }
 
-void SegmentTree1D::Insert(SegmentNode1D*& p, const Segment& segment, StoredObjectNode* objPtr) {
+template <std::size_t dimensions>
+void SegmentTree1D<dimensions>::Insert(SegmentNode1D*& p, const Segment& segment, StoredObjectNode* objPtr) {
 	std::set<StoredObjectNode*> associatedSet;
 	associatedSet.insert(objPtr);
 	root = Insert(root, segment, associatedSet);
 }
 
-SegmentNode1D* SegmentTree1D::Insert(SegmentNode1D* p, Segment segment, std::set<StoredObjectNode*> set) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::Insert(SegmentNode1D* p, Segment segment, std::set<StoredObjectNode*> set) {
 	if (p == NULL) {
 		SegmentNode1D* newNode = new SegmentNode1D(segment);
 		newNode->associatedSet = set;
@@ -183,7 +207,7 @@ SegmentNode1D* SegmentTree1D::Insert(SegmentNode1D* p, Segment segment, std::set
 			q->associatedSet = R;
 			q->isRThread = true;
 			q->rLink = succ;
-			root->isRThread = false;
+			p->isRThread = false;
 		}
 		else {
 			q = Insert(p->rLink, rightForInsertion, R);
@@ -198,7 +222,8 @@ SegmentNode1D* SegmentTree1D::Insert(SegmentNode1D* p, Segment segment, std::set
 	return balance(p);
 }
 
-SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, StoredObjectNode* objPtr, bool leftSon) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::Remove(SegmentNode1D* p, const Segment& segment, StoredObjectNode* objPtr, bool leftSon) {
 	if (!p) return NULL;
 
 	if (segment.a < p->range.a && !p->isLThread) {
@@ -271,9 +296,11 @@ SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, S
 			}
 			p = replacementNode;
 		}
+
 		if (p && segment.b == p->range.b) {
 			SegmentNode1D* succ = inorderSuccessor(p);
-			if (succ) {
+			if (succ && succ->associatedSet == p->associatedSet && !mergeableTail)
+			{
 				mergeableTail = p;
 				tailSuccessorRange = succ->range;
 			}
@@ -286,7 +313,8 @@ SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, S
 	return balance(p);
 }
 
-SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, bool leftSon) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::Remove(SegmentNode1D* p, const Segment& segment, bool leftSon) {
 	if (p == leftDummy || p == rightDummy)
 		return p;
 	if (segment < p->range)
@@ -359,24 +387,28 @@ SegmentNode1D* SegmentTree1D::Remove(SegmentNode1D* p, const Segment& segment, b
 	balance(p);
 }
 
-int SegmentTree1D::height(const SegmentNode1D* node) {
+template <std::size_t dimensions>
+int SegmentTree1D<dimensions>::height(const SegmentNode1D* node) {
 	return (node == NULL) ? 0 : (node->height);
 }
 
-int SegmentTree1D:: balanceFactor(const SegmentNode1D* node) {
+template <std::size_t dimensions>
+int SegmentTree1D<dimensions>:: balanceFactor(const SegmentNode1D* node) {
 	if (node == NULL)
 		return 0;
 	return ((node->isLThread == false) ? height(node->lLink) : 0) - ((node->isRThread == false) ? height(node->rLink) : 0);
 }
 
-void SegmentTree1D::fixHeight(SegmentNode1D* node)
+template <std::size_t dimensions>
+void SegmentTree1D<dimensions>::fixHeight(SegmentNode1D* node)
 {
 	int heightL = (node->isLThread == false) ? height(node->lLink) : 0;
 	int heightR = (node->isRThread == false) ? height(node->rLink) : 0;
 	node->height = ((heightL > heightR) ? heightL : heightR) + 1;
 }
 
-SegmentNode1D* SegmentTree1D::rotateright(SegmentNode1D* p) // правый поворот вокруг p
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::rotateright(SegmentNode1D* p) // правый поворот вокруг p
 {
 	SegmentNode1D* q = p->lLink;
 	if (q->isRThread == false) {
@@ -392,7 +424,8 @@ SegmentNode1D* SegmentTree1D::rotateright(SegmentNode1D* p) // правый поворот во
 	return q;
 }
 
-SegmentNode1D* SegmentTree1D::rotateleft(SegmentNode1D* q) // левый поворот вокруг q
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::rotateleft(SegmentNode1D* q) // левый поворот вокруг q
 {
 	SegmentNode1D* p = q->rLink;
 	if (p->isLThread == false) {
@@ -408,7 +441,8 @@ SegmentNode1D* SegmentTree1D::rotateleft(SegmentNode1D* q) // левый поворот вокр
 	return p;
 }
 
-SegmentNode1D* SegmentTree1D::balance(SegmentNode1D* p) // балансировка узла p
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::balance(SegmentNode1D* p) // балансировка узла p
 {
 	if (!p) return NULL;
 	fixHeight(p);
@@ -428,17 +462,33 @@ SegmentNode1D* SegmentTree1D::balance(SegmentNode1D* p) // балансировка узла p
 	return p;
 }
 
-SegmentNode1D* SegmentTree1D::getOverlappingNodeForPoint(SegmentNode1D* p, const double point) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::getOverlappingNodeForPoint(SegmentNode1D* p, const double point) {
 	if (p == NULL || p->range.isEmpty())
 		return NULL;
 	if (p->range.contains(point))
 		return p;
-	if (p->range.b < point)
+	if (p->range.b < point && !p->isRThread)
 		return getOverlappingNodeForPoint(p->rLink, point);
-	return getOverlappingNodeForPoint(p->lLink, point);
+	else if(!p->isLThread)
+		return getOverlappingNodeForPoint(p->lLink, point);
+	return NULL;
 }
 
-void SegmentTree1D::Delete(SegmentNode1D*& p) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::findOverlappingNode(SegmentNode1D* p, const Segment& range) {
+	if (p == NULL) return NULL;
+	if (p->range.a > range.b && !p->isLThread) {
+		return findOverlappingNode(p->lLink, range);
+	}
+	if (p->range.b < range.a && !p->isRThread) {
+		return findOverlappingNode(p->rLink, range);
+	}
+	return p;
+}
+
+template <std::size_t dimensions>
+void SegmentTree1D<dimensions>::Delete(SegmentNode1D*& p) {
 	if (p != NULL) {
 		if (!p->isLThread && !p->lLink) Delete(p->lLink);
 		if (!p->isRThread && !p->rLink) Delete(p->rLink);
@@ -447,7 +497,8 @@ void SegmentTree1D::Delete(SegmentNode1D*& p) {
 	}
 }
 
-SegmentNode1D* SegmentTree1D::inorderSuccessor(SegmentNode1D* p)
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::inorderSuccessor(SegmentNode1D* p)
 {
 	if (p == NULL)
 		return NULL;
@@ -461,7 +512,8 @@ SegmentNode1D* SegmentTree1D::inorderSuccessor(SegmentNode1D* p)
 	return q;
 }
 
-SegmentNode1D* SegmentTree1D::inorderPredecessor(SegmentNode1D* p)
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::inorderPredecessor(SegmentNode1D* p)
 {
 	if (p == NULL)
 		return NULL;
@@ -475,12 +527,14 @@ SegmentNode1D* SegmentTree1D::inorderPredecessor(SegmentNode1D* p)
 	return q;
 }
 
-SegmentNode1D* SegmentTree1D::findMin(SegmentNode1D* p)
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::findMin(SegmentNode1D* p)
 {
 	return (p->isLThread || p->lLink == leftDummy) ? p : findMin(p->lLink);
 }
 
-SegmentNode1D* SegmentTree1D::removeMin(SegmentNode1D* p) {
+template <std::size_t dimensions>
+SegmentNode1D<dimensions>* SegmentTree1D<dimensions>::removeMin(SegmentNode1D* p) {
 	if (p->lLink == leftDummy)
 	{
 		if (p->isRThread)
