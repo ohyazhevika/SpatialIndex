@@ -125,4 +125,3 @@ std::set<StoredObject<dimensions>> SpatialSegmentTree<dimensions>::getStabbedByP
 	cTree.ResetNodeColors();
 	return answer;
 }
-

@@ -25,4 +25,3 @@ public:
 		isLThread(false),
 		isRThread(false) {}
 };
-

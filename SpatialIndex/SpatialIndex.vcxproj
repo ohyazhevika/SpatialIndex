@@ -128,14 +128,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Node.cpp" />
     <ClCompile Include="SegmentNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AVL-Tree.h" />
-    <ClInclude Include="Node.h" />
     <ClInclude Include="Segment.h" />
-    <ClInclude Include="SegmentAssociatedList.h" />
     <ClInclude Include="SegmentNode.h" />
     <ClInclude Include="SegmentNode1D.h" />
     <ClInclude Include="SegmentTree.h" />

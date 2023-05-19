@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\AVL">
-      <UniqueIdentifier>{dce5239c-beed-45bd-a2fc-407af204eedc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\SpatialTree">
       <UniqueIdentifier>{43366356-18ec-4d42-a0d1-f31d5841b230}</UniqueIdentifier>
     </Filter>
@@ -24,21 +21,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SegmentNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TreePrinter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentAssociatedList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SegmentTree.h">
