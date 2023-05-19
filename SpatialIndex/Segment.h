@@ -48,6 +48,14 @@ struct Segment {
 		return !this->overlap(s).isEmpty();
 	}
 
+
+	// проверка того, что отрезки пересекаются хотя бы в одной точке
+	bool overlapsOrTouches(const Segment& s) {
+		if (!(a <= s.b) || !(s.a <= b))
+			return false;
+		return true;
+	}
+
 	// пересечение двух отрезков
 	Segment overlap(const Segment& s)
 	{

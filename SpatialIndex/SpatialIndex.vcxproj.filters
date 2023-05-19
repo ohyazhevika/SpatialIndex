@@ -47,19 +47,19 @@
     <ClInclude Include="SegmentNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SegmentTree2D.h">
-      <Filter>Header Files\AVL</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentTree1D.h">
-      <Filter>Header Files\AVL</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentNode1D.h">
-      <Filter>Header Files\AVL</Filter>
-    </ClInclude>
     <ClInclude Include="Segment.h">
       <Filter>Header Files\SpatialTree</Filter>
     </ClInclude>
     <ClInclude Include="AVL-Tree.h">
+      <Filter>Header Files\SpatialTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentNode1D.h">
+      <Filter>Header Files\SpatialTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentTree1D.h">
+      <Filter>Header Files\SpatialTree</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentTree2D.h">
       <Filter>Header Files\SpatialTree</Filter>
     </ClInclude>
   </ItemGroup>

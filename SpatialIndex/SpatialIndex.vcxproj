@@ -140,7 +140,7 @@
     <ClInclude Include="SegmentNode1D.h" />
     <ClInclude Include="SegmentTree.h" />
     <ClInclude Include="SegmentTree1D.h" />
-    <ClInclude Include="SegmentTree2D.h" />
+    <ClInclude Include="SpatialSegmentTree.h" />
     <ClInclude Include="TreePrinter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,45 +4,55 @@
 #include "Segment.h"
 typedef std::string string;
 
+
+template <std::size_t dimensions>
 struct BoundingBox {
-	
-	Segment xRange;
-	Segment yRange;
+	Segment edges[dimensions];
 	BoundingBox() {}
-	BoundingBox(Segment xRange, Segment yRange): xRange(xRange), yRange(yRange) {}
 
 	inline double area() {
 		double area = 1;
-		area *= (xRange.b - xRange.a);
-		area *= (yRange.b - yRange.b);
+		for (std::size_t axis = 0; axis < dimensions; axis++) {
+			area *= (edges[axis].a - edges[axis].b);
+		}
 		return area;
 	}
 
 	inline bool encloses(const BoundingBox& bb) {
-		return
-			xRange.a <= bb.xRange.a && xRange.b >= bb.xRange.b
-			&& yRange.a <= bb.yRange.a && yRange.b >= bb.yRange.b;
+		for (std::size_t axis = 0; axis < dimensions; axis++)
+			if (bb.edges[axis].a < edges[axis].a || edges[axis].b < bb.edges[axis].b)
+				return false;
+
+		return true;
 	}
 
 	inline bool overlaps(const BoundingBox& bb) {
-		if (!(xRange.a < bb.xRange.b) || !(bb.xRange.a < xRange.b))
-			return false;
-		if (!(yRange.a < bb.yRange.b) || !(bb.yRange.a < yRange.b))
-			return false;
+		for (std::size_t axis = 0; axis < dimensions; axis++)
+		{
+			if (!(edges[axis].a < bb.edges[axis].b) || !(bb.edges[axis].a < edges[axis].b))
+				return false;
+		}
+
 		return true;
 	}
 
 	bool operator == (const BoundingBox& bb) {
-		return xRange == bb.xRange && yRange == bb.yRange;
+		for (std::size_t axis = 0; axis < dimensions; axis++)
+			if (edges[axis].a != bb.edges[axis].a || edges[axis].b != bb.edges[axis].b)
+				return false;
+
+		return true;
 	}
 };
 
+template<std::size_t dimensions>
 struct StoredObject {
 
+	typedef BoundingBox<dimensions> BoundingBox;
+
 	string name;
+
 	BoundingBox bound;
-	//Segment xRange;
-	//Segment yRange;
 
 	StoredObject() {}
 
@@ -51,16 +61,18 @@ struct StoredObject {
 	StoredObject(const StoredObject& other) {
 		name = other.name;
 		bound = other.bound;
-	/*	xRange = other.xRange;
-		yRange = other.yRange;*/
 	}
 
 	friend bool operator < (const StoredObject& obj1, const StoredObject& obj2) {
 		return obj1.name < obj2.name;
 	}
 };
+
+template<std::size_t dimensions>
 struct StoredObjectNode {
-public:
+
+	typedef StoredObject<dimensions> StoredObject;
+
 	StoredObject object;
 	char color;
 	int height;
@@ -76,7 +88,13 @@ public:
 	}
 };
 
+template<std::size_t dimensions>
+
 class AVLTree {
+
+	typedef BoundingBox<dimensions>			BoundingBox;
+	typedef StoredObject<dimensions>		StoredObject;
+	typedef StoredObjectNode<dimensions>	StoredObjectNode;
 
 private:
 	StoredObjectNode* root;
@@ -92,7 +110,7 @@ public:
 		return nodeForObject;
 	}
 
-	bool Remove(StoredObject obj) {
+	void Remove(StoredObject obj) {
 		root = remove(root, obj);
 	}
 
@@ -111,8 +129,8 @@ public:
 private:
 	void Delete(StoredObjectNode*& p) {
 		if (p != NULL) {
-			Delete(p->right);
 			Delete(p->left);
+			Delete(p->right);
 			delete p;
 			p = NULL;
 		}
