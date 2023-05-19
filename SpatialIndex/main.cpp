@@ -12,11 +12,8 @@
 
 
 StoredObject storedObject(string name, double x1, double x2, double y1, double y2) {
-	StoredObject o;
-	o.label = name;
-	o.xRange = Segment(x1, x2);
-	o.yRange = Segment(y1, y2);
-	return o;
+	BoundingBox bound(Segment(x1, x2), Segment(y1, y2));
+	return StoredObject(name, bound);
 }
 
 int main()

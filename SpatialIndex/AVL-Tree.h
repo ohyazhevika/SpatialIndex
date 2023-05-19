@@ -4,23 +4,59 @@
 #include "Segment.h"
 typedef std::string string;
 
+struct BoundingBox {
+	
+	Segment xRange;
+	Segment yRange;
+	BoundingBox() {}
+	BoundingBox(Segment xRange, Segment yRange): xRange(xRange), yRange(yRange) {}
+
+	inline double area() {
+		double area = 1;
+		area *= (xRange.b - xRange.a);
+		area *= (yRange.b - yRange.b);
+		return area;
+	}
+
+	inline bool encloses(const BoundingBox& bb) {
+		return
+			xRange.a <= bb.xRange.a && xRange.b >= bb.xRange.b
+			&& yRange.a <= bb.yRange.a && yRange.b >= bb.yRange.b;
+	}
+
+	inline bool overlaps(const BoundingBox& bb) {
+		if (!(xRange.a < bb.xRange.b) || !(bb.xRange.a < xRange.b))
+			return false;
+		if (!(yRange.a < bb.yRange.b) || !(bb.yRange.a < yRange.b))
+			return false;
+		return true;
+	}
+
+	bool operator == (const BoundingBox& bb) {
+		return xRange == bb.xRange && yRange == bb.yRange;
+	}
+};
 
 struct StoredObject {
 
-	string label;
-	Segment xRange;
-	Segment yRange;
+	string name;
+	BoundingBox bound;
+	//Segment xRange;
+	//Segment yRange;
 
 	StoredObject() {}
 
+	StoredObject(const string& name, const BoundingBox& bound): name(name), bound(bound) {}
+
 	StoredObject(const StoredObject& other) {
-		label = other.label;
-		xRange = other.xRange;
-		yRange = other.xRange;
+		name = other.name;
+		bound = other.bound;
+	/*	xRange = other.xRange;
+		yRange = other.yRange;*/
 	}
 
 	friend bool operator < (const StoredObject& obj1, const StoredObject& obj2) {
-		return obj1.label < obj2.label;
+		return obj1.name < obj2.name;
 	}
 };
 struct StoredObjectNode {
@@ -47,7 +83,7 @@ private:
 
 public:
 	AVLTree() {
-		root = nullptr;;
+		root = nullptr;
 	}
 
 	StoredObjectNode* Insert(StoredObject obj) {
@@ -64,8 +100,8 @@ public:
 		ResetSubtreeColors(root);
 	}
 
-	StoredObjectNode* find(const StoredObject& obj) {
-		return find(root, obj);
+	StoredObjectNode* find(const string& objectName) {
+		return find(root, objectName);
 	}
 
 	~AVLTree() {
@@ -149,9 +185,9 @@ private:
 			nodeForObject = new StoredObjectNode(obj);
 			return nodeForObject;
 		};
-		if (obj.label < p->object.label)
+		if (obj.name < p->object.name)
 			p->left = Insert(p->left, obj, nodeForObject);
-		else if (obj.label > p->object.label)
+		else if (obj.name > p->object.name)
 			p->right = Insert(p->right, obj, nodeForObject);
 		else {
 			nodeForObject = NULL;
@@ -177,9 +213,9 @@ private:
 	StoredObjectNode* remove(StoredObjectNode* p, StoredObject obj) // удаление ключа k из дерева p
 	{
 		if (!p) return NULL;
-		if (obj.label < p->object.label)
+		if (obj.name < p->object.name)
 			p->left = remove(p->left, obj);
-		else if (obj.label > p->object.label)
+		else if (obj.name > p->object.name)
 			p->right = remove(p->right, obj);
 		else
 		{
@@ -195,13 +231,13 @@ private:
 		return balance(p);
 	}
 
-	StoredObjectNode* find(StoredObjectNode* p, const StoredObject& obj) {
+	StoredObjectNode* find(StoredObjectNode* p, const string& name) {
 		if (!p) return NULL;
-		if (obj < p->object) {
-			return find(p->left, obj);
+		if (name < p->object.name) {
+			return find(p->left, name);
 		}
-		else if (p->object < obj) {
-			return find(p->right, obj);
+		else if (p->object.name < name) {
+			return find(p->right, name);
 		}
 		else {
 			return p;

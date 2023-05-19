@@ -16,6 +16,9 @@
     <Filter Include="Header Files\AVL">
       <UniqueIdentifier>{dce5239c-beed-45bd-a2fc-407af204eedc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\SpatialTree">
+      <UniqueIdentifier>{43366356-18ec-4d42-a0d1-f31d5841b230}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -44,9 +47,6 @@
     <ClInclude Include="SegmentNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AVL-Tree.h">
-      <Filter>Header Files\AVL</Filter>
-    </ClInclude>
     <ClInclude Include="SegmentTree2D.h">
       <Filter>Header Files\AVL</Filter>
     </ClInclude>
@@ -57,7 +57,10 @@
       <Filter>Header Files\AVL</Filter>
     </ClInclude>
     <ClInclude Include="Segment.h">
-      <Filter>Header Files\AVL</Filter>
+      <Filter>Header Files\SpatialTree</Filter>
+    </ClInclude>
+    <ClInclude Include="AVL-Tree.h">
+      <Filter>Header Files\SpatialTree</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

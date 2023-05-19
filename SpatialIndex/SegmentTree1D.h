@@ -22,7 +22,6 @@ public:
 
 	std::set<StoredObjectNode*> GetSegmentsForRangeQuery(const Segment& range);
 
-	// если реализую remove - буду богиней
 	void Remove(const Segment& segment, StoredObjectNode* objPtr);
 
 
